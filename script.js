@@ -4,7 +4,7 @@ const clipContainer = document.getElementById("clip-container");
 
 
 
-/* TALLÓZÁS */
+// TALLÓZÁS
 
 
 dropZone.addEventListener("click", () => {
@@ -25,7 +25,7 @@ fileInput.addEventListener("change", () => {
 
 
 
-/* DRAG & DROP */
+/// drag and drúp
 
 
 dropZone.addEventListener("dragover", (event) => {
