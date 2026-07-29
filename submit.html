@@ -2,12 +2,14 @@
 <html lang="hu">
 
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Clip beküldése - Clip Nézegetés</title>
+    <title>Clip beküldése - ClipNézegetés</title>
 
     <link rel="stylesheet" href="style.css">
+
 </head>
 
 
@@ -19,107 +21,80 @@
     <h2>🎬 ClipNézegetés</h2>
 
     <div>
+
         <a href="index.html">Home</a>
+
         <a href="submit.html">Beküldés</a>
+
         <a href="clips.html">Böngészés</a>
+
         <a href="profile.html">Profil</a>
+
     </div>
 
 </nav>
 
 
 
+
 <main>
 
-<section class="submit-box">
-
-
-<h1>🎥 Clip beküldése</h1>
-
-
-<form>
-
 
 <section class="submit-box">
 
-<h1>🎥 Clip beküldése</h1>
 
-
-<div id="clip-container">
-
-
-<div class="clip-card">
-
-
-<div class="clip-top">
-
-
-<div class="preview">
-
-    <span>Preview</span>
-
-</div>
-
-
-<input 
-class="clip-name"
-type="text"
-value="video20090902"
->
-
-
-</div>
+    <h1>🎥 Clip beküldése</h1>
 
 
 
-<input 
-class="game-name"
-type="text"
-placeholder="Játék neve (opcionális)"
->
+    <div id="drop-zone">
+
+
+        <p>
+            🎬 Húzd ide a clip-eket
+        </p>
+
+
+        <span>
+            vagy kattints a tallózáshoz
+        </span>
 
 
 
-<textarea 
-class="description"
-maxlength="500"
-placeholder="Megjegyzés (max 500 karakter)"
-></textarea>
+        <input 
+            id="file-input"
+            type="file"
+            accept="video/*"
+            multiple
+        >
 
 
-<div class="counter">
-0 / 500
-</div>
-
-
-
-</div>
-
-
-</div>
+    </div>
 
 
 
-<button id="add-clip">
-+ Új clip hozzáadása
-</button>
 
 
-<button>
-Beküldés
-</button>
+    <div id="clip-container"></div>
 
 
-</section>
 
 
-</form>
+
+    <button type="submit">
+
+        Beküldés
+
+    </button>
+
 
 
 </section>
 
 
 </main>
+
+
 
 
 <script src="script.js"></script>
