@@ -13,7 +13,7 @@ body {
 
     background: #0f1115;
     background-image: url(images/background.png);
-    background-repeat: repeat;
+    background-size: repeat;
 
     color: white;
 
