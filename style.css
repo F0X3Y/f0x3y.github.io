@@ -1,0 +1,388 @@
+* {
+    box-sizing: border-box;
+}
+
+
+body {
+
+    margin: 0;
+
+    background: #0f1115;
+
+    color: white;
+
+    font-family: Arial, sans-serif;
+
+}
+
+
+
+/* NAVBAR */
+
+nav {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding: 20px 50px;
+
+    background: #171a21;
+
+}
+
+
+
+nav a {
+
+    color: white;
+
+    text-decoration: none;
+
+    margin-left: 25px;
+
+}
+
+
+
+nav a:hover {
+
+    color: #5865F2;
+
+}
+
+
+
+/* GOMBOK */
+
+
+button {
+
+    margin-top: 30px;
+
+    padding: 15px 35px;
+
+    border-radius: 12px;
+
+    border: none;
+
+    background: #5865F2;
+
+    color: white;
+
+    font-size: 18px;
+
+    cursor: pointer;
+
+}
+
+
+
+button:hover {
+
+    background: #4752C4;
+
+}
+
+
+
+/* SUBMIT OLDAL */
+
+
+.submit-box {
+
+    width: 700px;
+
+    max-width: 90%;
+
+    margin: 80px auto;
+
+    background: #171a21;
+
+    padding: 40px;
+
+    border-radius: 20px;
+
+}
+
+
+
+.submit-box h1 {
+
+    text-align: center;
+
+    margin-bottom: 30px;
+
+}
+
+
+
+/* FILE INPUT */
+
+
+input[type="file"] {
+
+    width: 100%;
+
+    padding: 15px;
+
+    background: #0f1115;
+
+    border-radius: 12px;
+
+    border: 1px solid #333;
+
+    color:white;
+
+}
+
+
+
+/* CLIP KÁRTYA */
+
+
+.clip-card {
+
+    background: #20232b;
+
+    border-radius: 15px;
+
+    padding: 15px;
+
+    margin-top: 20px;
+
+}
+
+
+
+/* FEJLÉC */
+
+
+.clip-header {
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+}
+
+
+
+/* PREVIEW */
+
+
+.preview {
+
+    width:160px;
+
+    height:90px;
+
+    object-fit:cover;
+
+    background:#0f1115;
+
+    border-radius:10px;
+
+}
+
+
+
+/* NÉV + MÉRET */
+
+
+.info {
+
+    flex:1;
+
+}
+
+
+
+.filename {
+
+    width:100%;
+
+    background:transparent;
+
+    border:none;
+
+    color:white;
+
+    font-size:18px;
+
+}
+
+
+
+.filename:disabled {
+
+    cursor:default;
+
+}
+
+
+
+.filesize {
+
+    color:#aaa;
+
+    font-size:14px;
+
+}
+
+
+
+/* NYITÓ GOMB */
+
+
+.expand {
+
+    background:none;
+
+    border:none;
+
+    color:white;
+
+    font-size:20px;
+
+    padding:10px;
+
+}
+
+
+
+/* RÉSZLETEK */
+
+
+.details {
+
+    margin-top:20px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:15px;
+
+}
+
+
+
+.details input,
+.details textarea {
+
+    background:#0f1115;
+
+    border:1px solid #333;
+
+    border-radius:10px;
+
+    padding:12px;
+
+    color:white;
+
+    font-size:16px;
+
+}
+
+
+
+.details textarea {
+
+    min-height:80px;
+
+    resize:none;
+
+    font-weight:bold;
+
+}
+
+
+
+/* ÖSSZECSUKOTT ÁLLAPOT */
+
+
+.collapsed .details {
+
+    display:none;
+
+}
+
+/* DROP ZONE */
+
+
+#drop-zone {
+
+    margin-bottom:30px;
+
+    padding:40px;
+
+    border:2px dashed #5865F2;
+
+    border-radius:15px;
+
+    text-align:center;
+
+    cursor:pointer;
+
+    background:#0f1115;
+
+}
+
+
+
+#drop-zone:hover {
+
+    background:#161923;
+
+}
+
+
+
+#drop-zone span {
+
+    color:#aaa;
+
+    font-size:14px;
+
+}
+
+
+
+/* FILE INPUT ELREJTÉSE */
+
+
+#file-input {
+
+    display:none;
+
+}
+
+
+
+/* TÖRLÉS GOMB */
+
+
+.delete {
+
+    background:#d33;
+
+    padding:8px 12px;
+
+    margin:0;
+
+    font-size:14px;
+
+}
+
+
+
+.delete:hover {
+
+    background:#a22;
+
+}
