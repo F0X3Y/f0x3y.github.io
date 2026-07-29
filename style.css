@@ -13,12 +13,19 @@ body {
 
     background: #0f1115;
     background-image: url(images/background.png);
-    background-size: repeat;
+    background-size: cover;
+    background-attachment: fixed;
 
     color: white;
 
     font-family: Arial, sans-serif;
 
+}
+
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
 }
 
 
@@ -64,13 +71,18 @@ nav a:hover {
 /* GOMBOK */
 
 
-button {
+button,
+.btn {
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 
     margin-top: 30px;
 
     padding: 15px 35px;
 
-    border-radius: 12px;
+    border-radius: 999px;
 
     border: none;
 
@@ -79,17 +91,194 @@ button {
     color: white;
 
     font-size: 18px;
+    font-weight: 600;
+    text-decoration: none;
 
     cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease;
 
 }
 
 
 
-button:hover {
+button:hover,
+.btn:hover {
 
     background: color-mix(in srgb,var(--accent-color), black 50%);
+    transform: translateY(-2px);
 
+}
+
+.btn-secondary {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+}
+
+.btn-secondary:hover {
+    background: rgba(255,255,255,0.16);
+}
+
+.hero {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 24px;
+    align-items: center;
+    padding: 40px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(23,26,33,0.95), rgba(13,15,21,0.92));
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.hero-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(88,101,242,0.2);
+    color: #d6dcff;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.hero h1 {
+    margin: 0 0 16px;
+    font-size: clamp(2rem, 3.2vw, 3.1rem);
+    line-height: 1.1;
+}
+
+.hero p {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #d9dce4;
+    margin: 0;
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.hero-card,
+.content-section {
+    background: rgba(23,26,33,0.72);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.hero-card {
+    padding: 24px;
+}
+
+.hero-card h3,
+.section-heading h2,
+.channel-card h3 {
+    margin: 0 0 10px;
+}
+
+.hero-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 12px;
+    color: #d8dce4;
+}
+
+.content-section {
+    margin-top: 28px;
+    padding: 32px;
+}
+
+.section-heading {
+    margin-bottom: 20px;
+}
+
+.section-heading p,
+.channel-card p,
+.video-card p {
+    color: #b7bdc9;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.video-card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 16px;
+}
+
+.video-card iframe {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: none;
+    border-radius: 12px;
+    background: #000;
+}
+
+.video-card h3 {
+    margin: 14px 0 8px;
+}
+
+.channel-card {
+    margin-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.06);
+}
+
+@media (max-width: 840px) {
+    .hero {
+        grid-template-columns: 1fr;
+    }
+
+    .video-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .channel-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 560px) {
+    nav {
+        flex-direction: column;
+        gap: 14px;
+        padding: 20px 24px;
+    }
+
+    nav div {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    nav a {
+        margin-left: 0;
+    }
+
+    .hero,
+    .content-section {
+        padding: 24px;
+    }
 }
 
 

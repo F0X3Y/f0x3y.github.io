@@ -78,6 +78,19 @@ colorImage.onload = () => {
 
 
 // ===============================
+// YOUTUBE PLAYLIST SETUP
+// ===============================
+
+const latestClipPlaylist = document.getElementById("latest-clip-playlist");
+
+if (latestClipPlaylist) {
+    const playlistId = "PLHa_xc6szQIFv72ugZIODwW6w2_hrXSiN";
+    latestClipPlaylist.src = `https://www.youtube.com/embed/videoseries?list=${playlistId}&index=1`;
+    latestClipPlaylist.setAttribute("data-playlist-id", playlistId);
+}
+
+
+// ===============================
 // CLIP UPLOAD SYSTEM
 // ===============================
 
