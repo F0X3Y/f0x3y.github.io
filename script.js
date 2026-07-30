@@ -3,76 +3,61 @@
 // ===============================
 
 const colorImage = new Image();
+const root = document.documentElement;
+const fallbackAccent = getComputedStyle(root).getPropertyValue("--accent-color").trim() || "#5865F2";
+
+function applyAccentColor(value) {
+    root.style.setProperty("--accent-color", value);
+}
 
 colorImage.src = "images/background.png";
 
-
 colorImage.onload = () => {
+    if (typeof window.ColorThief !== "function") {
+        applyAccentColor(fallbackAccent);
+        return;
+    }
 
+    try {
+        const colorThief = new window.ColorThief();
+        const palette = colorThief.getPalette(colorImage, 8);
 
-    const colorThief = new ColorThief();
-
-
-    const palette = colorThief.getPalette(colorImage, 8);
-
-
-
-    // legélénkebb szín keresése
-    let bestColor = palette[0];
-    let bestScore = 0;
-
-
-    palette.forEach(color => {
-
-
-        const r = color[0];
-        const g = color[1];
-        const b = color[2];
-
-
-        // fényerő
-        const brightness = (r + g + b) / 3;
-
-
-        // színtelítettség közelítése
-        const max = Math.max(r, g, b);
-        const min = Math.min(r, g, b);
-
-        const saturation = max - min;
-
-
-
-        // a túl sötét színeket büntetjük
-        const score = saturation * 2 + brightness;
-
-
-
-        if (score > bestScore) {
-
-            bestScore = score;
-            bestColor = color;
-
+        if (!palette || !palette.length) {
+            applyAccentColor(fallbackAccent);
+            return;
         }
 
+        let bestColor = palette[0];
+        let bestScore = 0;
 
-    });
+        palette.forEach(color => {
+            const r = color[0];
+            const g = color[1];
+            const b = color[2];
+            const brightness = (r + g + b) / 3;
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            const saturation = max - min;
+            const score = saturation * 2 + brightness;
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestColor = color;
+            }
+        });
+
+        const rgb = `rgb(${bestColor[0]}, ${bestColor[1]}, ${bestColor[2]})`;
+        applyAccentColor(rgb);
+        console.log("Accent:", rgb);
+    } catch (error) {
+        console.warn("Accent color fallback used:", error);
+        applyAccentColor(fallbackAccent);
+    }
+};
 
 
-
-    const rgb = `rgb(${bestColor[0]}, ${bestColor[1]}, ${bestColor[2]})`;
-
-
-
-    document.documentElement.style.setProperty(
-        "--accent-color",
-        rgb
-    );
-
-
-
-    console.log("Accent:", rgb);
-
-
+colorImage.onerror = () => {
+    applyAccentColor(fallbackAccent);
 };
 
 
@@ -98,6 +83,7 @@ if (latestClipPlaylist) {
 const fileInput = document.getElementById("file-input");
 const dropZone = document.getElementById("drop-zone");
 const clipContainer = document.getElementById("clip-container");
+const profileClipList = document.getElementById("profile-clip-list");
 
 
 
@@ -180,6 +166,43 @@ if (fileInput && dropZone && clipContainer) {
 
 
 
+
+// ===============================
+// PROFIL OLDAL: KÁRTYA INTERAKCIÓ
+// ===============================
+
+function setupClipCardInteractions(card) {
+    const expand = card.querySelector(".expand");
+    const filename = card.querySelector(".filename");
+    const comment = card.querySelector(".comment");
+    const counter = card.querySelector(".counter");
+    const deleteButton = card.querySelector(".delete");
+
+    if (!expand || !filename || !comment || !counter || !deleteButton) {
+        return;
+    }
+
+    expand.addEventListener("click", () => {
+        card.classList.toggle("collapsed");
+
+        if (card.classList.contains("collapsed")) {
+            filename.disabled = true;
+            expand.textContent = "▼";
+        } else {
+            filename.disabled = false;
+            filename.focus();
+            expand.textContent = "▲";
+        }
+    });
+
+    comment.addEventListener("input", () => {
+        counter.textContent = `${comment.value.length} / 500`;
+    });
+
+    deleteButton.addEventListener("click", () => {
+        card.remove();
+    });
+}
 
 // ===============================
 // FÁJLOK FELDOLGOZÁSA

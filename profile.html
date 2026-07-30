@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="hu">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Profil</title>
+
+    <link rel="icon" href="images/favicon.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js"></script>
+</head>
+
+<body>
+
+<nav>
+    <h2>🎬 ClipNézegetés</h2>
+
+    <div>
+        <a href="index.html">Home</a>
+        <a href="submit.html">Beküldés</a>
+        <a href="clips.html">Böngészés</a>
+        <a href="profile.html">Profil</a>
+    </div>
+</nav>
+
+<main>
+    <section class="profile-section">
+        <div class="profile-header">
+            <div class="pfp-container">
+                <img src="images/defPfp.jpg" alt="Profilkép" class="profile-pic">
+                
+                <input type="file" id="pfp-upload" hidden>
+
+                <label for="pfp-upload" class="upload-btn">
+                    <img src="images/upload.png" alt="Profilkép feltöltése" class="upload-icon">
+                </label>
+            </div>
+            <h1 class="username">Felhasználónév</h1>
+        </div>
+
+        <div class="divider" style="margin-top:24px"></div>
+
+        <h2>📁 Beküldött clip-ek</h2>
+        <p>Az itt található clip-ek a beküldési folyamathoz hasonlóan szerkeszthetők, amíg a határidő még tart.</p>
+
+        <div id="profile-clip-list">
+            <div class="empty-state">
+                <h3>Nagy a csönd...</h3>
+                <p>Ha szeretnél clipeket feltölteni, kattints ide</p>
+                <a class="btn btn-primary" href="submit.html">Clip(ek) beküldése</a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

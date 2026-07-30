@@ -165,10 +165,10 @@ button:hover,
 .hero-card,
 .content-section {
     background: rgba(23,26,33,0.72);
-    border: 1px solid rgba(255,255,255,0.08);
+    border: none;
     border-radius: 20px;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
 }
 
 .hero-card {
@@ -215,6 +215,8 @@ button:hover,
 
 .video-card {
     background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     border-radius: 16px;
     padding: 16px;
 }
@@ -286,7 +288,8 @@ button:hover,
 /* SUBMIT OLDAL */
 
 
-.submit-box {
+.submit-box,
+.profile-section {
 
     width: 700px;
 
@@ -308,7 +311,8 @@ button:hover,
 
 
 
-.submit-box h1 {
+.submit-box h1,
+.profile-section h1 {
 
     text-align: center;
 
@@ -619,3 +623,138 @@ input[type="file"] {
     background:#a22;
 
 }
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 0 20px;
+}
+
+.divider {
+    height: 1px;
+    background: rgba(255,255,255,0.15);
+    margin: 10px 0 24px;
+}
+
+.profile-pic {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.upload-btn {
+    position: absolute;
+    inset: 0;
+
+    border: solid 2px var(--accent-color);
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.6);
+    color:white;
+
+    opacity: 0;
+    transition: opacity 0.2s ease;
+
+    cursor: pointer;
+}
+
+.pfp-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.pfp-container:hover .upload-btn {
+    opacity: 1;
+}
+
+.upload-icon {
+    width: 36px;
+    height: 36px;
+    pointer-events: none;
+
+}
+
+.username {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    border: 1px dashed rgba(255,255,255,0.2);
+    border-radius: 16px;
+    background: rgba(255,255,255,0.04);
+}
+
+.empty-state h3 {
+    margin: 0 0 10px;
+    font-size: 1.5rem;
+}
+
+.empty-state p {
+    margin: 0 0 20px;
+    color: #b7bdc9;
+}
+
+.channel-pic {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.channel-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 0 20px;
+    margin-top: 20px;
+    background: rgba(23,26,33,0.55);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 20px;
+}
+
+.channel-stat-header h1 {
+    line-height: 0;    
+}
+
+.channel-stat-header {
+    flex: 1;
+}
+
+.open-on-new-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.2); /* see-through black */
+    transition: background 0.18s ease, transform 0.12s ease;
+    color: white; /* for inline SVG using currentColor */
+    margin: 0 10px 0 12px; /* space to the right of the names */
+}
+
+.open-on-new-link:hover {
+    background: color-mix(in srgb, var(--accent-color), black 40%);
+    transform: translateY(-1px);
+}
+
+.open-on-new-link svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+    stroke: currentColor;
+    fill: none;
+}
+
