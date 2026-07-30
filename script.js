@@ -527,3 +527,59 @@ function formatSize(bytes) {
 
 
 }
+
+
+// ===============================
+// PAGE TRANSITIONS
+// ===============================
+
+
+document.querySelectorAll("a").forEach(link => {
+
+
+    const url = link.href;
+
+
+    if (
+        url &&
+        url.startsWith(window.location.origin) &&
+        !link.target
+    ) {
+
+
+        link.addEventListener("click", event => {
+
+
+            event.preventDefault();
+
+
+
+            if (!document.startViewTransition) {
+
+                window.location.href = url;
+
+                return;
+
+            }
+
+
+
+
+            document.startViewTransition(() => {
+
+
+                window.location.href = url;
+
+
+            });
+
+
+        });
+
+
+    }
+
+
+});
+
+
