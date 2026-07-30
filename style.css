@@ -135,6 +135,7 @@ button:hover,
 .hero-pill {
     display: inline-flex;
     align-items: center;
+    vertical-align: middle;
     padding: 8px 14px;
     border-radius: 999px;
     background: rgba(88,101,242,0.2);
@@ -142,6 +143,45 @@ button:hover,
     font-size: 14px;
     font-weight: 700;
     margin-bottom: 16px;
+}
+
+.hero-pill-link {
+    text-decoration: none;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    gap: 8px;
+    position: relative;
+    transition: background 0.2s ease, transform 0.2s ease, padding 0.2s ease;
+}
+
+.hero-pill-link .hero-pill-open-icon {
+    width: 0;
+    height: 16px;
+    margin-left: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: width 0.2s ease, opacity 0.2s ease, transform 0.2s ease, margin-left 0.2s ease;
+    transform: translateX(-2px) translateY(2px);
+    filter: brightness(0) invert(1);
+}
+
+.hero-pill-link:hover .hero-pill-open-icon {
+    width: 16px;
+    margin-left: 8px;
+    opacity: 0.2;
+    transform: translateX(0) translateY(0);
+}
+
+.hero-pill-link:hover {
+    background: rgba(88,101,242,0.35);
+    transform: translateY(-2px);
+}
+
+.discord-icon {
+    height: 16px;
+    width: 16px;
 }
 
 .hero h1 {
@@ -852,4 +892,8 @@ input[type="file"] {
 
 }
 
-
+.discord-icon {
+    width: 20px;
+    height: 20px;
+    margin: 0 3px 0 0;
+}
