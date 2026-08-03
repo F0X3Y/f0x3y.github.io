@@ -287,7 +287,7 @@ function setupClipCardInteractions(card) {
 // ===============================
 
 
-function handleFiles(files) {
+async function handleFiles(files) {
 
 
     for (const file of files) {
