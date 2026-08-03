@@ -439,6 +439,25 @@ button:hover,
         justify-content: center;
     }
 
+    .submit-actions-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .submit-box button[type="submit"] {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .server-status-panel {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .server-status-panel .server-status-refresh {
+        width: 100%;
+    }
+
     .hero,
     .content-section {
         padding: 24px;
