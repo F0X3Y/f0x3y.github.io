@@ -85,8 +85,63 @@ const dropZone = document.getElementById("drop-zone");
 const clipContainer = document.getElementById("clip-container");
 const profileClipList = document.getElementById("profile-clip-list");
 
+const SERVER_STATUS_URL = "http://m125gamedev.duckdns.org/active";
+const STATUS_POLL_INTERVAL_MS = 30000;
 
+function updateServerStatusWidgets(isOnline) {
+    const widgets = document.querySelectorAll("[data-server-status]");
 
+    widgets.forEach(widget => {
+        const statusText = widget.querySelector(".server-status-text");
+        const statusDot = widget.querySelector(".server-status-dot");
+
+        if (!statusText || !statusDot) {
+            return;
+        }
+
+        widget.classList.toggle("online", isOnline);
+        widget.classList.toggle("offline", !isOnline);
+
+        statusText.textContent = isOnline ? "A szerver online" : "A szerver offline";
+        statusDot.setAttribute("aria-label", isOnline ? "online" : "offline");
+    });
+}
+
+async function checkServerStatus() {
+    try {
+        const response = await fetch(SERVER_STATUS_URL, {
+            method: "GET",
+            cache: "no-store",
+            mode: "cors"
+        });
+
+        if (response.ok && response.status === 200) {
+            updateServerStatusWidgets(true);
+            return;
+        }
+    } catch (error) {
+        // Fall through to a no-cors check below so the page still reflects a reachable server.
+    }
+
+    try {
+        await fetch(SERVER_STATUS_URL, {
+            method: "GET",
+            cache: "no-store",
+            mode: "no-cors"
+        });
+        updateServerStatusWidgets(true);
+    } catch (error) {
+        updateServerStatusWidgets(false);
+    }
+}
+
+const refreshButton = document.getElementById("server-status-refresh");
+if (refreshButton) {
+    refreshButton.addEventListener("click", checkServerStatus);
+}
+
+checkServerStatus();
+setInterval(checkServerStatus, STATUS_POLL_INTERVAL_MS);
 
 
 // Csak submit oldalon fusson
@@ -220,12 +275,46 @@ function handleFiles(files) {
 
             createClipCard(file);
 
+            await uploadFile(file);
+
 
         }
 
 
     }
 
+
+}
+
+async function uploadFile(file) {
+
+    try {
+
+        const result = await fetch("http://m125gamedev.duckdns.org", {
+
+            method: "UPLOAD",
+
+            headers: {
+                "Content-Length": file.size,
+                "Content-Type": "application/octet-stream",
+                "filename": file.name
+            },
+
+            body: file
+
+        });
+
+
+        console.log("Feltöltve:", file.name);
+
+        console.log(await result.text());
+
+
+    } catch (error) {
+
+        console.error("Feltöltési hiba:", error);
+
+    }
 
 }
 

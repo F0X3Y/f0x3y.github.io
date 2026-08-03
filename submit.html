@@ -22,7 +22,12 @@
 
     <h2>🎬 ClipNézegetés</h2>
 
-    <div>
+    <div class="nav-actions">
+
+        <div class="server-status-nav" data-server-status="nav" aria-live="polite">
+            <span class="server-status-dot"></span>
+            <span class="server-status-text">A szerver ellenőrzése...</span>
+        </div>
 
         <a href="index.html">Home</a>
 
@@ -81,13 +86,21 @@
 
 
 
+    <div class="submit-actions-row">
+        <button type="submit">
+            Beküldés
+        </button>
 
-
-    <button type="submit">
-
-        Beküldés
-
-    </button>
+        <div class="server-status-panel" data-server-status="submit" aria-live="polite">
+            <div class="server-status-main">
+                <span class="server-status-dot"></span>
+                <span class="server-status-text">A szerver ellenőrzése...</span>
+            </div>
+            <button type="button" class="server-status-refresh" id="server-status-refresh" aria-label="Szerver állapot frissítése">
+                ↻ Frissítés
+            </button>
+        </div>
+    </div>
 
 
 
