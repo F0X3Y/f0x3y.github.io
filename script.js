@@ -87,6 +87,24 @@ const profileClipList = document.getElementById("profile-clip-list");
 
 const SERVER_STATUS_URL = "http://m125gamedev.duckdns.org/active";
 const STATUS_POLL_INTERVAL_MS = 30000;
+const STATUS_TIMEOUT_MS = 5000;
+
+function setCheckingState() {
+    const widgets = document.querySelectorAll("[data-server-status]");
+
+    widgets.forEach(widget => {
+        const statusText = widget.querySelector(".server-status-text");
+        const statusDot = widget.querySelector(".server-status-dot");
+
+        if (!statusText || !statusDot) {
+            return;
+        }
+
+        widget.classList.remove("online", "offline");
+        statusText.textContent = "A szerver ellenőrzése...";
+        statusDot.setAttribute("aria-label", "checking");
+    });
+}
 
 function updateServerStatusWidgets(isOnline) {
     const widgets = document.querySelectorAll("[data-server-status]");
@@ -107,32 +125,37 @@ function updateServerStatusWidgets(isOnline) {
     });
 }
 
-async function checkServerStatus() {
+async function fetchWithTimeout(url, timeoutMs) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
     try {
-        const response = await fetch(SERVER_STATUS_URL, {
+        return await fetch(url, {
             method: "GET",
             cache: "no-store",
-            mode: "cors"
+            mode: "cors",
+            signal: controller.signal
         });
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
+async function checkServerStatus() {
+    setCheckingState();
+
+    try {
+        const response = await fetchWithTimeout(SERVER_STATUS_URL, STATUS_TIMEOUT_MS);
 
         if (response.ok && response.status === 200) {
             updateServerStatusWidgets(true);
             return;
         }
     } catch (error) {
-        // Fall through to a no-cors check below so the page still reflects a reachable server.
+        // A timeout vagy hibás válasz azt jelzi, hogy a szerver nem érhető el.
     }
 
-    try {
-        await fetch(SERVER_STATUS_URL, {
-            method: "GET",
-            cache: "no-store",
-            mode: "no-cors"
-        });
-        updateServerStatusWidgets(true);
-    } catch (error) {
-        updateServerStatusWidgets(false);
-    }
+    updateServerStatusWidgets(false);
 }
 
 const refreshButton = document.getElementById("server-status-refresh");
