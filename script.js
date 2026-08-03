@@ -63,15 +63,16 @@ colorImage.onerror = () => {
 
 
 // ===============================
-// YOUTUBE PLAYLIST SETUP
+// YOUTUBE LATEST CLIP SETUP
 // ===============================
 
 const latestClipPlaylist = document.getElementById("latest-clip-playlist");
 
 if (latestClipPlaylist) {
-    const playlistId = "PLHa_xc6szQIFv72ugZIODwW6w2_hrXSiN";
-    latestClipPlaylist.src = `https://www.youtube.com/embed/videoseries?list=${playlistId}&index=1`;
-    latestClipPlaylist.setAttribute("data-playlist-id", playlistId);
+    const latestVideoId = "YYiz76Nfhb0";
+
+    latestClipPlaylist.src = `https://www.youtube.com/embed/${latestVideoId}`;
+    latestClipPlaylist.setAttribute("data-video-id", latestVideoId);
 }
 
 
