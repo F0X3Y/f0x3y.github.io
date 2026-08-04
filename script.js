@@ -80,23 +80,81 @@ if (latestClipPlaylist) {
 // CLIP UPLOAD SYSTEM
 // ===============================
 
-function get_url(){
-    //const response=await fetchWithTimeout("https://m125gamedev.duckdns.org/active",2000)
-    //if (response.status===200){
-    //    return "https://m125gamedev.duckdns.org"
-    //}
-    return "https://m125gamedev.ipv64.de:51088"
+const DUCKDNS_SERVER_URL = "https://m125gamedev.duckdns.org";
+const FALLBACK_SERVER_URL = "https://m125gamedev.ipv64.de:51088";
+
+async function get_url() {
+    const candidates = [DUCKDNS_SERVER_URL, FALLBACK_SERVER_URL];
+
+    for (const candidate of candidates) {
+        try {
+            const response = await fetchWithTimeout(`${candidate}/active`, 2000);
+
+            if (response && response.ok) {
+                return candidate;
+            }
+        } catch (error) {
+            // The candidate is unavailable, try the next one.
+        }
+    }
+
+    return FALLBACK_SERVER_URL;
 }
 
-const SERVER_URL = get_url()
-
+let SERVER_URL = FALLBACK_SERVER_URL;
+let SERVER_STATUS_URL = `${SERVER_URL}/active`;
 
 const fileInput = document.getElementById("file-input");
 const dropZone = document.getElementById("drop-zone");
 const clipContainer = document.getElementById("clip-container");
 const profileClipList = document.getElementById("profile-clip-list");
+const submitButton = document.querySelector(".submit-box button[type='submit']");
+const uploadProgressWrapper = document.getElementById("upload-progress-wrapper");
+const uploadProgressBar = document.getElementById("upload-progress-bar");
+const uploadProgressText = document.getElementById("upload-progress-text");
+const uploadStatus = document.getElementById("upload-status");
 
-const SERVER_STATUS_URL = SERVER_URL+"/active";
+let serverAvailable = false;
+let uploadErrorTimer = null;
+
+function setUploadProgress(percent, visible = true, label) {
+    if (!uploadProgressWrapper || !uploadProgressBar || !uploadProgressText) {
+        return;
+    }
+
+    const clampedPercent = Math.min(100, Math.max(0, percent));
+    const roundedPercent = Math.round(clampedPercent);
+    const displayLabel = label ?? (roundedPercent > 0 ? `${roundedPercent}%` : "Feltöltés...");
+
+    uploadProgressBar.style.width = `${clampedPercent}%`;
+    uploadProgressBar.setAttribute("aria-valuenow", String(roundedPercent));
+    uploadProgressText.textContent = displayLabel;
+    uploadProgressWrapper.classList.toggle("visible", visible);
+
+    if (!visible) {
+        uploadProgressBar.style.width = "0%";
+        uploadProgressBar.setAttribute("aria-valuenow", "0");
+        uploadProgressText.textContent = "Feltöltés...";
+    }
+}
+
+function showUploadError(message, durationMs = 10000) {
+    if (!uploadStatus) {
+        return;
+    }
+
+    clearTimeout(uploadErrorTimer);
+    uploadStatus.textContent = message;
+    uploadStatus.classList.add("visible");
+
+    uploadErrorTimer = setTimeout(() => {
+        uploadStatus.classList.remove("visible");
+        setTimeout(() => {
+            uploadStatus.textContent = "";
+        }, 250);
+    }, durationMs);
+}
+
 const STATUS_POLL_INTERVAL_MS = 30000;
 const STATUS_TIMEOUT_MS = 5000;
 
@@ -117,6 +175,19 @@ function setCheckingState() {
     });
 }
 
+function updateSubmitButtonState() {
+    if (!submitButton) {
+        return;
+    }
+
+    const hasSelectedFiles = !!fileInput && fileInput.files && fileInput.files.length > 0;
+    const shouldDisable = !serverAvailable || !hasSelectedFiles;
+
+    submitButton.disabled = shouldDisable;
+    submitButton.setAttribute("aria-disabled", String(shouldDisable));
+    submitButton.classList.toggle("disabled-submit", shouldDisable);
+}
+
 function updateServerStatusWidgets(isOnline) {
     const widgets = document.querySelectorAll("[data-server-status]");
 
@@ -134,6 +205,9 @@ function updateServerStatusWidgets(isOnline) {
         statusText.textContent = isOnline ? "A szerver online" : "A szerver offline";
         statusDot.setAttribute("aria-label", isOnline ? "online" : "offline");
     });
+
+    serverAvailable = isOnline;
+    updateSubmitButtonState();
 }
 
 async function fetchWithTimeout(url, timeoutMs) {
@@ -174,7 +248,14 @@ if (refreshButton) {
     refreshButton.addEventListener("click", checkServerStatus);
 }
 
-checkServerStatus();
+async function initializeServerUrl() {
+    SERVER_URL = await get_url();
+    SERVER_STATUS_URL = `${SERVER_URL}/active`;
+    checkServerStatus();
+}
+
+initializeServerUrl();
+updateSubmitButtonState();
 setInterval(checkServerStatus, STATUS_POLL_INTERVAL_MS);
 
 
@@ -201,6 +282,7 @@ if (fileInput && dropZone && clipContainer) {
     fileInput.addEventListener("change", () => {
 
         handleFiles(fileInput.files);
+        updateSubmitButtonState();
 
     });
 
@@ -243,6 +325,7 @@ if (fileInput && dropZone && clipContainer) {
 
 
         handleFiles(event.dataTransfer.files);
+        updateSubmitButtonState();
 
 
     });
@@ -321,35 +404,52 @@ async function handleFiles(files) {
 }
 
 async function uploadFile(file) {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
 
-    try {
+        setUploadProgress(0, true, "Feltöltés...");
 
-        const result = await fetch(SERVER_URL, {
+        xhr.open("UPLOAD", SERVER_URL, true);
+        xhr.setRequestHeader("Content-Length", String(file.size));
+        xhr.setRequestHeader("Content-Type", "application/octet-stream");
+        xhr.setRequestHeader("filename", file.name);
 
-            method: "UPLOAD",
+        xhr.upload.addEventListener("progress", (event) => {
+            if (!event.lengthComputable) {
+                return;
+            }
 
-            headers: {
-                "Content-Length": file.size,
-                "Content-Type": "application/octet-stream",
-                "filename": file.name
-            },
-
-            body: file
-
+            const percent = (event.loaded / event.total) * 100;
+            const label = percent > 0 ? `${Math.round(percent)}%` : "Feltöltés...";
+            setUploadProgress(percent, true, label);
         });
 
+        xhr.onload = async () => {
+            try {
+                const responseText = xhr.responseText || "";
+                console.log("Feltöltve:", file.name);
+                console.log(responseText);
+                setUploadProgress(100, true, "100%");
 
-        console.log("Feltöltve:", file.name);
+                setTimeout(() => {
+                    setUploadProgress(0, false);
+                }, 600);
 
-        console.log(await result.text());
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
+        };
 
+        xhr.onerror = () => {
+            setUploadProgress(0, false);
+            showUploadError("Feltöltés sikertelen. Próbáld újra.");
+            console.error("Feltöltési hiba:", file.name);
+            reject(new Error("Upload request failed"));
+        };
 
-    } catch (error) {
-
-        console.error("Feltöltési hiba:", error);
-
-    }
-
+        xhr.send(file);
+    });
 }
 
 

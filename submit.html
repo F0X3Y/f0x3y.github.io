@@ -86,19 +86,28 @@
 
 
 
-    <div class="submit-actions-row">
-        <button type="submit">
-            Beküldés
-        </button>
-
-        <div class="server-status-panel" data-server-status="submit" aria-live="polite">
-            <div class="server-status-main">
-                <span class="server-status-dot"></span>
-                <span class="server-status-text">A szerver ellenőrzése...</span>
+    <div class="submit-controls">
+        <div id="upload-progress-wrapper" class="upload-progress-wrapper hidden" aria-live="polite">
+            <div id="upload-progress-bar" class="upload-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <span id="upload-progress-text">Feltöltés...</span>
             </div>
-            <button type="button" class="server-status-refresh" id="server-status-refresh" aria-label="Szerver állapot frissítése">
-                ↻ Frissítés
+        </div>
+        <div id="upload-status" class="upload-status" aria-live="polite"></div>
+
+        <div class="submit-actions-row">
+            <button type="submit">
+                Beküldés
             </button>
+
+            <div class="server-status-panel" data-server-status="submit" aria-live="polite">
+                <div class="server-status-main">
+                    <span class="server-status-dot"></span>
+                    <span class="server-status-text">A szerver ellenőrzése...</span>
+                </div>
+                <button type="button" class="server-status-refresh" id="server-status-refresh" aria-label="Szerver állapot frissítése">
+                    ↻ Frissítés
+                </button>
+            </div>
         </div>
     </div>
 

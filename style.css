@@ -126,11 +126,71 @@ nav {
     background: rgba(255,255,255,0.12);
 }
 
+.submit-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0 0 24px;
+}
+
+.upload-progress-wrapper {
+    display: none;
+    width: 100%;
+}
+
+.upload-progress-wrapper.visible {
+    display: block;
+}
+
+.upload-progress-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 0%;
+    min-width: 0;
+    height: 30px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--accent-color), white 18%), color-mix(in srgb, var(--accent-color), black 15%));
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.14);
+    transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1), filter 0.2s ease;
+    overflow: hidden;
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.upload-progress-wrapper.visible .upload-progress-bar {
+    filter: saturate(1.05);
+}
+
+.upload-progress-bar span {
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.45);
+}
+
+.upload-status {
+    min-height: 20px;
+    color: #ff8d8d;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    text-align: center;
+}
+
+.upload-status.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 .submit-actions-row {
     display: flex;
     align-items: center;
     gap: 16px;
-    margin: 0 0 24px;
+    margin: 0;
 }
 
 .server-status-panel {
@@ -157,6 +217,17 @@ nav {
     width: auto;
     margin-top: 0;
     min-width: 140px;
+    transition: opacity 0.2s ease, filter 0.2s ease, background 0.2s ease, cursor 0.2s ease;
+}
+
+.submit-box button[type="submit"].disabled-submit,
+.submit-box button[type="submit"]:disabled {
+    background: rgba(170, 170, 180, 0.38);
+    color: rgba(255, 255, 255, 0.72);
+    opacity: 0.5;
+    filter: grayscale(0.2);
+    cursor: not-allowed;
+    box-shadow: none;
 }
 
 nav a {
