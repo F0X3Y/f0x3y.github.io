@@ -86,7 +86,7 @@ const dropZone = document.getElementById("drop-zone");
 const clipContainer = document.getElementById("clip-container");
 const profileClipList = document.getElementById("profile-clip-list");
 
-const SERVER_STATUS_URL = "http://m125gamedev.duckdns.org/active";
+const SERVER_STATUS_URL = "https://m125gamedev.duckdns.org/active";
 const STATUS_POLL_INTERVAL_MS = 30000;
 const STATUS_TIMEOUT_MS = 5000;
 
@@ -314,7 +314,7 @@ async function uploadFile(file) {
 
     try {
 
-        const result = await fetch("http://m125gamedev.duckdns.org", {
+        const result = await fetch("https://m125gamedev.duckdns.org", {
 
             method: "UPLOAD",
 
