@@ -80,15 +80,15 @@ if (latestClipPlaylist) {
 // CLIP UPLOAD SYSTEM
 // ===============================
 
-async function get_url(){
-    const response=await fetchWithTimeout("https://m125gamedev.duckdns.org/active",2000)
-    if (response.status===200){
-        return "https://m125gamedev.duckdns.org"
-    }
+function get_url(){
+    //const response=await fetchWithTimeout("https://m125gamedev.duckdns.org/active",2000)
+    //if (response.status===200){
+    //    return "https://m125gamedev.duckdns.org"
+    //}
     return "https://m125gamedev.ipv64.de:51088"
 }
 
-const SERVER_URL = await get_url()
+const SERVER_URL = get_url()
 
 
 const fileInput = document.getElementById("file-input");
