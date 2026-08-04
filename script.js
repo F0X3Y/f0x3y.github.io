@@ -80,13 +80,23 @@ if (latestClipPlaylist) {
 // CLIP UPLOAD SYSTEM
 // ===============================
 
+async function get_url(){
+    const response=await fetchWithTimeout("https://m125gamedev.duckdns.org/active",2000)
+    if (response.status===200){
+        return "https://m125gamedev.duckdns.org"
+    }
+    return "https://m125gamedev.ipv64.de:51088"
+}
+
+const SERVER_URL = await get_url()
+
 
 const fileInput = document.getElementById("file-input");
 const dropZone = document.getElementById("drop-zone");
 const clipContainer = document.getElementById("clip-container");
 const profileClipList = document.getElementById("profile-clip-list");
 
-const SERVER_STATUS_URL = "https://m125gamedev.duckdns.org/active";
+const SERVER_STATUS_URL = SERVER_URL+"/active";
 const STATUS_POLL_INTERVAL_MS = 30000;
 const STATUS_TIMEOUT_MS = 5000;
 
@@ -314,7 +324,7 @@ async function uploadFile(file) {
 
     try {
 
-        const result = await fetch("https://m125gamedev.duckdns.org", {
+        const result = await fetch(SERVER_URL, {
 
             method: "UPLOAD",
 
