@@ -18,19 +18,38 @@ jobs:
       - name: Get changed files
         id: changed
         run: |
+          FILES=$(git diff --name-only HEAD~1 HEAD | while read file; do
+            echo "📄 [$file](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/$file)"
+          done)
+
           echo "files<<EOF" >> $GITHUB_OUTPUT
-
-          git diff --name-only HEAD~1 HEAD | while read file; do
-            echo "📄 [$file](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/$file)" >> $GITHUB_OUTPUT
-          done
-
+          echo "$FILES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Send Discord message
         run: |
-          curl -H "Content-Type: application/json" \
+          MESSAGE=$(cat <<'EOF'
+          || <@&1534146629555327027> ||
+
+          🚀 Új frissítés érkezett a GitHub repóba!
+
+          📦 Repository: ${{ github.repository }}
+          👤 Készítette: ${{ github.actor }}
+
+          📝 Commit: [${{ github.event.head_commit.message }}](${{ github.event.head_commit.url }})
+
+          🔗 Weblap: [f0x3y.github.io](https://f0x3y.github.io)
+
+          📂 Módosított fájlok:
+          ${{ steps.changed.outputs.files }}
+          EOF
+          )
+
+          jq -n \
+          --arg content "$MESSAGE" \
+          '{content: $content}' \
+          | curl \
+          -H "Content-Type: application/json" \
           -X POST \
-          -d '{
-            "content": "|| <@&1534146629555327027> ||\n\n🚀 Új frissítés érkezett a GitHub repóba!\n\n📦 Repository: ${{ github.repository }}\n👤 Készítette: ${{ github.actor }}\n📝 Commit: [${{ github.event.head_commit.message }}](${{ github.event.head_commit.url }})\n🔗 Weblap: [f0x3y.github.io](https://f0x3y.github.io)\n\n📂 Módosított fájlok:\n${{ steps.changed.outputs.files }}"
-          }' \
+          -d @- \
           ${{ secrets.DISCORD_WEBHOOK }}
