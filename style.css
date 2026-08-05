@@ -789,10 +789,19 @@ input[type="file"] {
     color: #b7bdc9;
 }
 
-.auth-box a {
+.auth-box p a {
     color: var(--accent-color);
     text-decoration: none;
     font-weight: 700;
+}
+
+.auth-box p a:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+.auth-box p a:visited {
+    color: color-mix(in srgb, var(--accent-color), black 20%);
 }
 
 .auth-box a:hover {
