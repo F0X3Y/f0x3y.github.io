@@ -186,6 +186,10 @@ nav {
     transform: translateY(0);
 }
 
+.upload-status.success {
+    color: #7ee7a0;
+}
+
 .submit-actions-row {
     display: flex;
     align-items: center;

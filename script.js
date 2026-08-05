@@ -145,6 +145,7 @@ function showUploadError(message, durationMs = 10000) {
 
     clearTimeout(uploadErrorTimer);
     uploadStatus.textContent = message;
+    uploadStatus.classList.remove("success");
     uploadStatus.classList.add("visible");
 
     uploadErrorTimer = setTimeout(() => {
@@ -153,6 +154,41 @@ function showUploadError(message, durationMs = 10000) {
             uploadStatus.textContent = "";
         }, 250);
     }, durationMs);
+}
+
+function showUploadSuccess(message, durationMs = 4000) {
+    if (!uploadStatus) {
+        return;
+    }
+
+    clearTimeout(uploadErrorTimer);
+    uploadStatus.textContent = message;
+    uploadStatus.classList.remove("error");
+    uploadStatus.classList.add("visible", "success");
+
+    uploadErrorTimer = setTimeout(() => {
+        uploadStatus.classList.remove("visible", "success");
+        setTimeout(() => {
+            uploadStatus.textContent = "";
+        }, 250);
+    }, durationMs);
+}
+
+function resetSubmitPage() {
+    if (fileInput) {
+        fileInput.value = "";
+    }
+
+    if (clipContainer) {
+        clipContainer.innerHTML = "";
+    }
+
+    if (dropZone) {
+        dropZone.style.background = "";
+    }
+
+    setUploadProgress(0, false);
+    updateSubmitButtonState();
 }
 
 const STATUS_POLL_INTERVAL_MS = 30000;
@@ -261,9 +297,18 @@ setInterval(checkServerStatus, STATUS_POLL_INTERVAL_MS);
 
 // Csak submit oldalon fusson
 
-if (fileInput && dropZone && clipContainer) {
+if (fileInput && dropZone && clipContainer && submitButton) {
 
+    submitButton.addEventListener("click", () => {
+        const hasSelectedFiles = fileInput.files && fileInput.files.length > 0;
 
+        if (!hasSelectedFiles) {
+            return;
+        }
+
+        resetSubmitPage();
+        showUploadSuccess("Sikeres beküldés");
+    });
 
     // ===============================
     // TALLÓZÁS
