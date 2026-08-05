@@ -18,7 +18,7 @@ async function login(url,username,pswd){//bejelentkezés
     loginrq=await fetch(url+"/login",{method:"POST",headers:{"username":username,"password":returnHash}})
     if (loginrq.status==200){
         console.log("logged in")
-        sessionStorage.setItem("token",loginrq.text())
+        sessionStorage.setItem("token",await loginrq.text())
     }
 
 }
