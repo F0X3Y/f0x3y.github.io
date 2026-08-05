@@ -30,7 +30,7 @@ async function hexdigest(str) {
     return returnHash
 }
 
-async function register(url,username,pswd){//regisztrálláss
+async function signup(url,username,pswd){//regisztrálláss
     password=await hexdigest(pswd)
     body=JSON.stringify({"username":username,"password":password})
     console.log(await fetch(url+"/register",{method:"POST",
