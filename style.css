@@ -886,5 +886,5 @@ a:hover {
 }
 
 a:visited {
-    color: color-mix(in srgb, var(--accent-color), black 20%);
+    color: white;
 }
