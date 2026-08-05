@@ -21,10 +21,9 @@ jobs:
           echo "files<<EOF" >> $GITHUB_OUTPUT
 
           git diff --name-only HEAD~1 HEAD | while read file; do
-            echo "📄 [$file](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/$file)" >> files.txt
+            echo "📄 [$file](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/$file)" >> $GITHUB_OUTPUT
           done
 
-          cat files.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Send Discord message
