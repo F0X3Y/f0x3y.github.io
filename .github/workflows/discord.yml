@@ -55,20 +55,20 @@ jobs:
       - name: Send Discord message
         run: |
           MESSAGE=$(cat <<EOF
-|| <@&1534146629555327027> ||
+          || <@&1534146629555327027> ||
 
-🚀 Új frissítés érkezett a GitHub repóba!
+          🚀 Új frissítés érkezett a GitHub repóba!
 
-📦 Repository: ${{ github.repository }}
-👤 Készítette: ${{ github.actor }}
+          📦 Repository: ${{ github.repository }}
+          👤 Készítette: ${{ github.actor }}
 
-📝 Commit: [${{ github.event.head_commit.message }}](${{ github.event.head_commit.url }})
+          📝 Commit: [${{ github.event.head_commit.message }}](${{ github.event.head_commit.url }})
 
-🔗 Weblap: [f0x3y.github.io](https://f0x3y.github.io)
+          🔗 Weblap: [f0x3y.github.io](https://f0x3y.github.io)
 
-📂 Módosított fájlok:
-${{ steps.changed.outputs.files }}
-EOF
+          📂 Módosított fájlok:
+          ${{ steps.changed.outputs.files }}
+          EOF
           )
 
           jq -n \
