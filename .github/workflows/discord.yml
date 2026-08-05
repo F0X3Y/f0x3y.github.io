@@ -54,7 +54,7 @@ jobs:
 
       - name: Send Discord message
         run: |
-          MESSAGE=$(cat <<'EOF'
+          MESSAGE=$(cat <<EOF
 || <@&1534146629555327027> ||
 
 🚀 Új frissítés érkezett a GitHub repóba!
