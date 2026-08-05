@@ -15,6 +15,6 @@ jobs:
           curl -H "Content-Type: application/json" \
           -X POST \
           -d '{
-            "content": "🚀 Új frissítés érkezett a GitHub repóba!\n📦 Repository: ${{ github.repository }}\n👤 Készítette: ${{ github.actor }}\n📝 Commit: ${{ github.event.head_commit.message }}\n🔗 ${{ github.event.head_commit.url }}"
+            "content": "|| <@&1534146629555327027> ||\n\n🚀 Új frissítés érkezett a GitHub repóba!\n📦 Repository: ${{ github.repository }}\n👤 Készítette: ${{ github.actor }}\n📝 Commit: [${{ github.event.head_commit.message }}](${{ github.event.head_commit.url }})"
           }' \
           ${{ secrets.DISCORD_WEBHOOK }}
