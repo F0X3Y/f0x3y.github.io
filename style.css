@@ -874,17 +874,19 @@ input[type="file"] {
     transform: translateY(-2px);
 }
 
-/* GLOBAL LINKS */
+/* AUTH PAGE LINKS */
 
-a {
+.auth-box a {
     color: var(--accent-color);
     text-decoration: none;
+    font-weight: 700;
 }
 
-a:hover {
+.auth-box a:hover {
     color: white;
+    text-decoration: underline;
 }
 
-a:visited {
-    color: white;
+.auth-box a:visited {
+    color: color-mix(in srgb, var(--accent-color), black 20%);
 }
