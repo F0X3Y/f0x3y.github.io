@@ -1,0 +1,36 @@
+name: Discord Notification
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Get changed files
+        id: changed
+        run: |
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+
+          git diff --name-only HEAD~1 HEAD | while read file; do
+            echo "📄 [$file](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/$file)" >> $GITHUB_OUTPUT
+          done
+
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Send Discord message
+        run: |
+          curl -H "Content-Type: application/json" \
+          -X POST \
+          -d '{
+            "content": "|| <@&1534146629555327027> ||\n\n🚀 Új frissítés érkezett a GitHub repóba!\n\n📦 Repository: ${{ github.repository }}\n👤 Készítette: ${{ github.actor }}\n📝 Commit: [${{ github.event.head_commit.message }}](${{ github.event.head_commit.url }})\n\n📂 Módosított fájlok:\n${{ steps.changed.outputs.files }}"
+          }' \
+          ${{ secrets.DISCORD_WEBHOOK }}

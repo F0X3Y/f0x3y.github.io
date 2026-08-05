@@ -81,7 +81,7 @@ if (latestClipPlaylist) {
 // ===============================
 
 const DUCKDNS_SERVER_URL = "https://m125gamedev.duckdns.org";
-const FALLBACK_SERVER_URL = "https://m125gamedev.ipv64.de:51088";
+const FALLBACK_SERVER_URL = "https://m125gamedev.ipv64.de:59397";
 
 async function get_url() {
     const candidates = [DUCKDNS_SERVER_URL, FALLBACK_SERVER_URL];
