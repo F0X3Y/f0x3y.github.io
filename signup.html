@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign up - Clip Nézegetés</title>
+    <link rel="icon" href="images/favicon.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-auth-page="signup">
+
+<div id="page-transition"></div>
+
+<nav>
+    <h2>🎬 ClipNézegetés</h2>
+
+    <div class="nav-actions">
+        <div class="server-status-nav" data-server-status="nav" aria-live="polite">
+            <span class="server-status-dot"></span>
+            <span class="server-status-text">A szerver ellenőrzése...</span>
+        </div>
+        <a href="index.html">Home</a>
+        <a href="submit.html">Beküldés</a>
+        <a href="clips.html">Böngészés</a>
+        <a href="login.html">Log in</a>
+        <a href="signup.html">Sign up</a>
+    </div>
+</nav>
+
+<main>
+    <section class="submit-box">
+        <h1>Sign up</h1>
+
+        <form id="auth-form">
+            <div class="details">
+                <input id="auth-username" type="text" autocomplete="username" placeholder="Felhasználónév" required>
+                <input id="auth-password" type="password" autocomplete="new-password" placeholder="Jelszó" required>
+            </div>
+
+            <button type="submit">Regisztráció</button>
+        </form>
+
+        <p style="text-align:center; margin-top:16px;">
+            Van már profilod? <a href="login.html">Jelentkezz be!</a>
+        </p>
+
+        <div id="auth-message" class="upload-status" aria-live="polite"></div>
+    </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js"></script>
+<script src="backend_comms.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

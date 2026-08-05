@@ -1,4 +1,320 @@
 // ===============================
+// AUTH HELPERS
+// ===============================
+
+const AUTH_STORAGE_USERNAME_KEY = "clipnezegetes_username";
+const AUTH_PAGE_SELECTOR = "[data-auth-page]";
+const AUTH_HEADER_NAME = "token";
+
+function isPromise(value) {
+    return !!value && typeof value.then === "function";
+}
+
+function getStoredUsername() {
+    return localStorage.getItem(AUTH_STORAGE_USERNAME_KEY) || "";
+}
+
+function rememberUsername(username) {
+    if (username) {
+        localStorage.setItem(AUTH_STORAGE_USERNAME_KEY, username);
+    }
+}
+
+function decodeJwtPayload(token) {
+    try {
+        const parts = String(token).split(".");
+        if (parts.length < 2) return null;
+
+        const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+        const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
+
+        return JSON.parse(atob(padded));
+    } catch {
+        return null;
+    }
+}
+
+function extractToken(result) {
+    if (!result) return "";
+
+    if (typeof result === "string") {
+        return result.trim();
+    }
+
+    if (typeof result === "object") {
+        const directCandidates = [
+            result.token,
+            result.access_token,
+            result.accessToken,
+            result.jwt,
+            result.value
+        ];
+
+        for (const candidate of directCandidates) {
+            if (candidate) return String(candidate).trim();
+        }
+
+        if (result.data && typeof result.data === "object") {
+            const nestedCandidates = [
+                result.data.token,
+                result.data.access_token,
+                result.data.accessToken,
+                result.data.jwt,
+                result.data.value
+            ];
+
+            for (const candidate of nestedCandidates) {
+                if (candidate) return String(candidate).trim();
+            }
+        }
+    }
+
+    return "";
+}
+
+function extractUsername(result, fallback = "") {
+    if (!result) return fallback;
+
+    if (typeof result === "object") {
+        const candidates = [
+            result.username,
+            result.user?.username,
+            result.name,
+            result.displayName,
+            result.user?.name,
+            result.user?.displayName
+        ];
+
+        for (const candidate of candidates) {
+            if (candidate) return String(candidate).trim();
+        }
+    }
+
+    return fallback;
+}
+
+async function safeGetToken() {
+    try {
+        if (typeof window.get_token === "function") {
+            const raw = window.get_token();
+            const token = isPromise(raw) ? await raw : raw;
+            const cleaned = (token ?? "").toString().trim();
+            if (cleaned) return cleaned;
+        }
+    } catch {
+        // ignore
+    }
+
+    const fallbackKeys = ["token", "auth_token", "access_token", "jwt", "clip_token"];
+    for (const key of fallbackKeys) {
+        const value = localStorage.getItem(key);
+        if (value) return value.trim();
+    }
+
+    return "";
+}
+
+async function authHeaders(extraHeaders = {}) {
+    const headers = new Headers(extraHeaders);
+    const token = await safeGetToken();
+
+    if (token) {
+        headers.set(AUTH_HEADER_NAME, token);
+    }
+
+    return headers;
+}
+
+function getNextUrl(defaultUrl = "profile.html") {
+    const params = new URLSearchParams(window.location.search);
+    const next = params.get("next");
+
+    if (!next) return defaultUrl;
+    if (/^https?:\/\//i.test(next)) return defaultUrl;
+
+    return next;
+}
+
+function buildNavLink(href, text) {
+    const link = document.createElement("a");
+    link.href = href;
+    link.textContent = text;
+    return link;
+}
+
+function attachPageTransitionHandlers(root = document) {
+    root.querySelectorAll("a").forEach(link => {
+        if (link.dataset.transitionBound === "1") return;
+        link.dataset.transitionBound = "1";
+
+        const url = link.href;
+
+        if (
+            url &&
+            url.startsWith(window.location.origin) &&
+            !link.target
+        ) {
+            link.addEventListener("click", event => {
+                event.preventDefault();
+
+                if (!document.startViewTransition) {
+                    window.location.href = url;
+                    return;
+                }
+
+                document.startViewTransition(() => {
+                    window.location.href = url;
+                });
+            });
+        }
+    });
+}
+
+async function syncAuthNavigation() {
+    const token = await safeGetToken();
+    const loggedIn = !!token;
+
+    document.querySelectorAll(".nav-actions").forEach(container => {
+        const statusWidget = container.querySelector(".server-status-nav");
+        container.innerHTML = "";
+
+        if (statusWidget) {
+            container.appendChild(statusWidget);
+        }
+
+        const links = loggedIn
+            ? [
+                ["index.html", "Home"],
+                ["submit.html", "Beküldés"],
+                ["clips.html", "Böngészés"],
+                ["profile.html", "Profil"]
+            ]
+            : [
+                ["index.html", "Home"],
+                ["submit.html", "Beküldés"],
+                ["clips.html", "Böngészés"],
+                ["login.html", "Log in"],
+                ["signup.html", "Sign up"]
+            ];
+
+        links.forEach(([href, text]) => {
+            container.appendChild(buildNavLink(href, text));
+        });
+    });
+
+    attachPageTransitionHandlers();
+}
+
+async function setupProfileUsername() {
+    const usernameEl = document.querySelector(".username");
+    if (!usernameEl) return;
+
+    const stored = getStoredUsername();
+    if (stored) {
+        usernameEl.textContent = stored;
+        return;
+    }
+
+    const token = await safeGetToken();
+    const payload = decodeJwtPayload(token);
+
+    const candidate =
+        payload?.username ||
+        payload?.name ||
+        payload?.preferred_username ||
+        payload?.sub ||
+        "";
+
+    if (candidate) {
+        usernameEl.textContent = candidate;
+        rememberUsername(candidate);
+    }
+}
+
+async function setupAuthPage() {
+    const page = document.body?.dataset?.authPage;
+    const form = document.getElementById("auth-form");
+    const usernameInput = document.getElementById("auth-username");
+    const passwordInput = document.getElementById("auth-password");
+    const message = document.getElementById("auth-message");
+
+    if (!page || !form || !usernameInput || !passwordInput) return;
+
+    const token = await safeGetToken();
+    if (token) {
+        window.location.replace("profile.html");
+        return;
+    }
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!username || !password) {
+            if (message) {
+                message.textContent = "Tölts ki minden mezőt.";
+                message.classList.add("visible");
+            }
+            return;
+        }
+
+        const submitButton = form.querySelector("button[type='submit']");
+        if (submitButton) submitButton.disabled = true;
+
+        try {
+            const serverUrl = await get_url();
+
+            if (typeof window[page] !== "function") {
+                throw new Error(`Hiányzó backend függvény: ${page}`);
+            }
+
+            const result = await window[page](serverUrl, username, password);
+            const tokenFromResult = extractToken(result) || await safeGetToken();
+
+            if (!tokenFromResult) {
+                throw new Error("Nem érkezett token a backendtől.");
+            }
+
+            rememberUsername(extractUsername(result, username) || username);
+
+            if (message) {
+                message.textContent = page === "login"
+                    ? "Sikeres bejelentkezés."
+                    : "Sikeres regisztráció.";
+                message.classList.add("visible", "success");
+            }
+
+            window.location.replace(getNextUrl("profile.html"));
+        } catch (error) {
+            console.error(error);
+            if (message) {
+                message.textContent = page === "login"
+                    ? "Sikertelen bejelentkezés."
+                    : "Sikertelen regisztráció.";
+                message.classList.add("visible");
+                message.classList.remove("success");
+            }
+        } finally {
+            if (submitButton) submitButton.disabled = false;
+        }
+    });
+}
+
+async function requireAuthForSubmitPage() {
+    if (!window.location.pathname.endsWith("submit.html")) return true;
+
+    const token = await safeGetToken();
+    if (!token) {
+        window.location.replace(`login.html?next=${encodeURIComponent("submit.html")}`);
+        return false;
+    }
+
+    return true;
+}
+
+// ===============================
 // COLOR THIEF ACCENT COLOR
 // ===============================
 
@@ -55,12 +371,9 @@ colorImage.onload = () => {
     }
 };
 
-
 colorImage.onerror = () => {
     applyAccentColor(fallbackAccent);
 };
-
-
 
 // ===============================
 // YOUTUBE LATEST CLIP SETUP
@@ -70,11 +383,9 @@ const latestClipPlaylist = document.getElementById("latest-clip-playlist");
 
 if (latestClipPlaylist) {
     const latestVideoId = "YYiz76Nfhb0";
-
     latestClipPlaylist.src = `https://www.youtube.com/embed/${latestVideoId}`;
     latestClipPlaylist.setAttribute("data-video-id", latestVideoId);
 }
-
 
 // ===============================
 // CLIP UPLOAD SYSTEM
@@ -246,15 +557,19 @@ function updateServerStatusWidgets(isOnline) {
     updateSubmitButtonState();
 }
 
-async function fetchWithTimeout(url, timeoutMs) {
+async function fetchWithTimeout(url, timeoutMs, options = {}) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
+        const headers = await authHeaders(options.headers || {});
+
         return await fetch(url, {
-            method: "GET",
+            ...options,
+            method: options.method || "GET",
             cache: "no-store",
             mode: "cors",
+            headers,
             signal: controller.signal
         });
     } finally {
@@ -284,172 +599,21 @@ if (refreshButton) {
     refreshButton.addEventListener("click", checkServerStatus);
 }
 
-async function initializeServerUrl() {
-    SERVER_URL = await get_url();
-    SERVER_STATUS_URL = `${SERVER_URL}/active`;
-    checkServerStatus();
-}
+// ===============================
+// FILE UPLOAD
+// ===============================
 
-initializeServerUrl();
-updateSubmitButtonState();
-setInterval(checkServerStatus, STATUS_POLL_INTERVAL_MS);
+async function uploadFile(file) {
+    return new Promise(async (resolve, reject) => {
+        const token = await safeGetToken();
 
-
-// Csak submit oldalon fusson
-
-if (fileInput && dropZone && clipContainer && submitButton) {
-
-    submitButton.addEventListener("click", () => {
-        const hasSelectedFiles = fileInput.files && fileInput.files.length > 0;
-
-        if (!hasSelectedFiles) {
+        if (!token) {
+            setUploadProgress(0, false);
+            showUploadError("Nincs bejelentkezve a felhasználó.");
+            reject(new Error("Missing auth token"));
             return;
         }
 
-        resetSubmitPage();
-        showUploadSuccess("Sikeres beküldés");
-    });
-
-    // ===============================
-    // TALLÓZÁS
-    // ===============================
-
-
-    dropZone.addEventListener("click", () => {
-
-        fileInput.click();
-
-    });
-
-
-
-
-    fileInput.addEventListener("change", () => {
-
-        handleFiles(fileInput.files);
-        updateSubmitButtonState();
-
-    });
-
-
-
-
-
-    // ===============================
-    // DRAG & DROP
-    // ===============================
-
-
-    dropZone.addEventListener("dragover", (event) => {
-
-        event.preventDefault();
-
-        dropZone.style.background = "#20232b";
-
-    });
-
-
-
-
-    dropZone.addEventListener("dragleave", () => {
-
-        dropZone.style.background = "";
-
-    });
-
-
-
-
-    dropZone.addEventListener("drop", (event) => {
-
-
-        event.preventDefault();
-
-
-        dropZone.style.background = "";
-
-
-        handleFiles(event.dataTransfer.files);
-        updateSubmitButtonState();
-
-
-    });
-
-
-
-}
-
-
-
-
-
-
-// ===============================
-// PROFIL OLDAL: KÁRTYA INTERAKCIÓ
-// ===============================
-
-function setupClipCardInteractions(card) {
-    const expand = card.querySelector(".expand");
-    const filename = card.querySelector(".filename");
-    const comment = card.querySelector(".comment");
-    const counter = card.querySelector(".counter");
-    const deleteButton = card.querySelector(".delete");
-
-    if (!expand || !filename || !comment || !counter || !deleteButton) {
-        return;
-    }
-
-    expand.addEventListener("click", () => {
-        card.classList.toggle("collapsed");
-
-        if (card.classList.contains("collapsed")) {
-            filename.disabled = true;
-            expand.textContent = "▼";
-        } else {
-            filename.disabled = false;
-            filename.focus();
-            expand.textContent = "▲";
-        }
-    });
-
-    comment.addEventListener("input", () => {
-        counter.textContent = `${comment.value.length} / 500`;
-    });
-
-    deleteButton.addEventListener("click", () => {
-        card.remove();
-    });
-}
-
-// ===============================
-// FÁJLOK FELDOLGOZÁSA
-// ===============================
-
-
-async function handleFiles(files) {
-
-
-    for (const file of files) {
-
-
-        if (file.type.startsWith("video/")) {
-
-
-            createClipCard(file);
-
-            await uploadFile(file);
-
-
-        }
-
-
-    }
-
-
-}
-
-async function uploadFile(file) {
-    return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
 
         setUploadProgress(0, true, "Feltöltés...");
@@ -458,6 +622,7 @@ async function uploadFile(file) {
         xhr.setRequestHeader("Content-Length", String(file.size));
         xhr.setRequestHeader("Content-Type", "application/octet-stream");
         xhr.setRequestHeader("filename", file.name);
+        xhr.setRequestHeader(AUTH_HEADER_NAME, token);
 
         xhr.upload.addEventListener("progress", (event) => {
             if (!event.lengthComputable) {
@@ -497,106 +662,53 @@ async function uploadFile(file) {
     });
 }
 
-
-
-
-
-
 // ===============================
-// CLIP KÁRTYA LÉTREHOZÁSA
+// CLIP CARD CREATION
 // ===============================
-
 
 function createClipCard(file) {
-
-
-
     const card = document.createElement("div");
-
-
     card.className = "clip-card collapsed";
-
-
 
     const videoURL = URL.createObjectURL(file);
 
-
-
-
-
     card.innerHTML = `
-
-
         <div class="clip-header">
-
-
-
             <video
                 class="preview"
                 muted
+                playsinline
+                preload="metadata"
             >
-
                 <source src="${videoURL}">
-
             </video>
 
-
-
-
             <div class="info">
-
-
                 <input
                     class="filename"
                     value="${file.name}"
                     disabled
                 >
 
-
-
                 <div class="filesize">
-
                     ${formatSize(file.size)}
-
                 </div>
-
-
-
             </div>
-
-
-
 
             <button
                 class="expand"
                 type="button"
             >
-
                 ▼
-
             </button>
-
-
-
         </div>
 
-
-
-
-
-
         <div class="details">
-
-
             <input
                 class="game"
                 type="text"
                 placeholder="Játék neve (opcionális)"
             >
-
-
-
-
 
             <textarea
                 class="comment"
@@ -604,250 +716,153 @@ function createClipCard(file) {
                 placeholder="Megjegyzés"
             ></textarea>
 
-
-
-
-
             <div class="counter">
-
                 0 / 500
-
             </div>
-
-
-
-
 
             <button
                 class="delete"
                 type="button"
             >
-
                 🗑 Törlés
-
             </button>
-
-
-
         </div>
-
-
     `;
-
-
-
-
 
     clipContainer.appendChild(card);
 
-
-
-
-
-
-    // ===============================
-    // ELEMEK
-    // ===============================
-
-
     const expand = card.querySelector(".expand");
-
     const filename = card.querySelector(".filename");
-
     const comment = card.querySelector(".comment");
-
     const counter = card.querySelector(".counter");
-
     const deleteButton = card.querySelector(".delete");
+    const preview = card.querySelector(".preview");
 
-
-
-
-
-
-
-    // ===============================
-    // NYITÁS/ZÁRÁS
-    // ===============================
-
+    if (preview) {
+        preview.addEventListener("loadedmetadata", () => {
+            try {
+                preview.currentTime = Math.min(0.1, preview.duration || 0);
+            } catch {
+                // ignore
+            }
+        });
+    }
 
     expand.addEventListener("click", () => {
-
-
-
         card.classList.toggle("collapsed");
 
-
-
-
         if (card.classList.contains("collapsed")) {
-
-
-
             filename.disabled = true;
-
             expand.textContent = "▼";
-
-
-
         } else {
-
-
-
             filename.disabled = false;
-
             filename.focus();
-
             expand.textContent = "▲";
-
-
-
         }
-
-
-
     });
-
-
-
-
-
-
-
-    // ===============================
-    // KARAKTERSZÁMLÁLÓ
-    // ===============================
-
 
     comment.addEventListener("input", () => {
-
-
-        counter.textContent =
-            `${comment.value.length} / 500`;
-
-
+        counter.textContent = `${comment.value.length} / 500`;
     });
-
-
-
-
-
-
-
-
-    // ===============================
-    // TÖRLÉS
-    // ===============================
-
 
     deleteButton.addEventListener("click", () => {
-
-
         URL.revokeObjectURL(videoURL);
-
-
         card.remove();
-
-
     });
-
-
-
 }
 
-
-
-
-
-
 // ===============================
-// FÁJL MÉRET FORMÁZÁS
+// FILE PROCESSING
 // ===============================
 
+async function handleFiles(files) {
+    for (const file of files) {
+        if (file.type.startsWith("video/")) {
+            createClipCard(file);
+            await uploadFile(file);
+        }
+    }
+}
+
+// ===============================
+// FILE SIZE FORMAT
+// ===============================
 
 function formatSize(bytes) {
-
-
-
     if (bytes < 1024) {
-
-
         return bytes + " B";
-
-
     }
-
-
-
 
     if (bytes < 1024 * 1024) {
-
-
         return (bytes / 1024).toFixed(1) + " KB";
-
-
     }
-
-
-
 
     return (bytes / 1024 / 1024).toFixed(1) + " MB";
-
-
 }
 
-
 // ===============================
-// PAGE TRANSITIONS
+// INIT / PAGE-SPECIFIC LOGIC
 // ===============================
 
+(async () => {
+    await syncAuthNavigation();
+    await setupProfileUsername();
+    await setupAuthPage();
+    await requireAuthForSubmitPage();
 
-document.querySelectorAll("a").forEach(link => {
+    // Serve status should work on all pages that contain widgets
+    checkServerStatus();
+    setInterval(checkServerStatus, STATUS_POLL_INTERVAL_MS);
 
+    // Csak submit oldalon fusson
+    if (fileInput && dropZone && clipContainer && submitButton) {
+        submitButton.addEventListener("click", () => {
+            const hasSelectedFiles = fileInput.files && fileInput.files.length > 0;
 
-    const url = link.href;
-
-
-    if (
-        url &&
-        url.startsWith(window.location.origin) &&
-        !link.target
-    ) {
-
-
-        link.addEventListener("click", event => {
-
-
-            event.preventDefault();
-
-
-
-            if (!document.startViewTransition) {
-
-                window.location.href = url;
-
+            if (!hasSelectedFiles) {
                 return;
-
             }
 
-
-
-
-            document.startViewTransition(() => {
-
-
-                window.location.href = url;
-
-
-            });
-
-
+            resetSubmitPage();
+            showUploadSuccess("Sikeres beküldés");
         });
 
+        // ===============================
+        // TALLÓZÁS
+        // ===============================
+        dropZone.addEventListener("click", () => {
+            fileInput.click();
+        });
 
+        fileInput.addEventListener("change", () => {
+            handleFiles(fileInput.files);
+            updateSubmitButtonState();
+        });
+
+        // ===============================
+        // DRAG & DROP
+        // ===============================
+        dropZone.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            dropZone.style.background = "#20232b";
+        });
+
+        dropZone.addEventListener("dragleave", () => {
+            dropZone.style.background = "";
+        });
+
+        dropZone.addEventListener("drop", (event) => {
+            event.preventDefault();
+            dropZone.style.background = "";
+            handleFiles(event.dataTransfer.files);
+            updateSubmitButtonState();
+        });
     }
 
+    // Profile page interactions, if any
+    if (profileClipList) {
+        // placeholder for future profile clip logic
+    }
 
-});
-
-
+    attachPageTransitionHandlers();
+})();
