@@ -2,95 +2,10 @@
 // AUTH HELPERS
 // ===============================
 
-const AUTH_STORAGE_USERNAME_KEY = "clipnezegetes_username";
-const AUTH_PAGE_SELECTOR = "[data-auth-page]";
 const AUTH_HEADER_NAME = "token";
 
 function isPromise(value) {
     return !!value && typeof value.then === "function";
-}
-
-function getStoredUsername() {
-    return localStorage.getItem(AUTH_STORAGE_USERNAME_KEY) || "";
-}
-
-function rememberUsername(username) {
-    if (username) {
-        localStorage.setItem(AUTH_STORAGE_USERNAME_KEY, username);
-    }
-}
-
-function decodeJwtPayload(token) {
-    try {
-        const parts = String(token).split(".");
-        if (parts.length < 2) return null;
-
-        const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-        const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
-
-        return JSON.parse(atob(padded));
-    } catch {
-        return null;
-    }
-}
-
-function extractToken(result) {
-    if (!result) return "";
-
-    if (typeof result === "string") {
-        return result.trim();
-    }
-
-    if (typeof result === "object") {
-        const directCandidates = [
-            result.token,
-            result.access_token,
-            result.accessToken,
-            result.jwt,
-            result.value
-        ];
-
-        for (const candidate of directCandidates) {
-            if (candidate) return String(candidate).trim();
-        }
-
-        if (result.data && typeof result.data === "object") {
-            const nestedCandidates = [
-                result.data.token,
-                result.data.access_token,
-                result.data.accessToken,
-                result.data.jwt,
-                result.data.value
-            ];
-
-            for (const candidate of nestedCandidates) {
-                if (candidate) return String(candidate).trim();
-            }
-        }
-    }
-
-    return "";
-}
-
-function extractUsername(result, fallback = "") {
-    if (!result) return fallback;
-
-    if (typeof result === "object") {
-        const candidates = [
-            result.username,
-            result.user?.username,
-            result.name,
-            result.displayName,
-            result.user?.name,
-            result.user?.displayName
-        ];
-
-        for (const candidate of candidates) {
-            if (candidate) return String(candidate).trim();
-        }
-    }
-
-    return fallback;
 }
 
 async function safeGetToken() {
@@ -101,14 +16,8 @@ async function safeGetToken() {
             const cleaned = (token ?? "").toString().trim();
             if (cleaned) return cleaned;
         }
-    } catch {
-        // ignore
-    }
-
-    const fallbackKeys = ["token", "auth_token", "access_token", "jwt", "clip_token"];
-    for (const key of fallbackKeys) {
-        const value = localStorage.getItem(key);
-        if (value) return value.trim();
+    } catch (error) {
+        console.warn("Token lekérés sikertelen:", error);
     }
 
     return "";
@@ -135,10 +44,15 @@ function getNextUrl(defaultUrl = "profile.html") {
     return next;
 }
 
-function buildNavLink(href, text) {
+function buildNavLink(href, text, className = "") {
     const link = document.createElement("a");
     link.href = href;
     link.textContent = text;
+
+    if (className) {
+        link.className = className;
+    }
+
     return link;
 }
 
@@ -184,21 +98,21 @@ async function syncAuthNavigation() {
 
         const links = loggedIn
             ? [
-                ["index.html", "Home"],
-                ["submit.html", "Beküldés"],
-                ["clips.html", "Böngészés"],
-                ["profile.html", "Profil"]
+                ["index.html", "Home", ""],
+                ["submit.html", "Beküldés", ""],
+                ["clips.html", "Böngészés", ""],
+                ["profile.html", "Profil", ""]
             ]
             : [
-                ["index.html", "Home"],
-                ["submit.html", "Beküldés"],
-                ["clips.html", "Böngészés"],
-                ["login.html", "Log in"],
-                ["signup.html", "Sign up"]
+                ["index.html", "Home", ""],
+                ["submit.html", "Beküldés", ""],
+                ["clips.html", "Böngészés", ""],
+                ["login.html", "Log in", "nav-login-btn"],
+                ["signup.html", "Sign up", "nav-signup-btn"]
             ];
 
-        links.forEach(([href, text]) => {
-            container.appendChild(buildNavLink(href, text));
+        links.forEach(([href, text, className]) => {
+            container.appendChild(buildNavLink(href, text, className));
         });
     });
 
@@ -209,26 +123,89 @@ async function setupProfileUsername() {
     const usernameEl = document.querySelector(".username");
     if (!usernameEl) return;
 
-    const stored = getStoredUsername();
-    if (stored) {
-        usernameEl.textContent = stored;
+    try {
+        if (typeof window.get_username === "function") {
+            const raw = window.get_username();
+            const resolved = isPromise(raw) ? await raw : raw;
+            const username = (resolved ?? "").toString().trim();
+
+            if (username) {
+                usernameEl.textContent = username;
+                return;
+            }
+        }
+    } catch (error) {
+        console.warn("Felhasználónév lekérés sikertelen:", error);
+    }
+
+    usernameEl.textContent = "Felhasználó";
+}
+
+function isSignupPasswordValid(password) {
+    const lengthValid = password.length >= 8 && password.length <= 16;
+    const numberValid = /\d/.test(password);
+    const specialValid = /[^A-Za-z0-9]/.test(password);
+
+    return {
+        lengthValid,
+        numberValid,
+        specialValid,
+        allValid: lengthValid && numberValid && specialValid
+    };
+}
+
+function updateAuthButtonState() {
+    const authButton = document.querySelector("#auth-form button[type='submit']");
+    if (!authButton) return;
+
+    const page = document.body?.dataset?.authPage;
+    const passwordInput = document.getElementById("auth-password");
+
+    let shouldDisable = !serverAvailable;
+
+    if (page === "signup" && passwordInput) {
+        const validity = isSignupPasswordValid(passwordInput.value);
+        shouldDisable = shouldDisable || !validity.allValid;
+    }
+
+    authButton.disabled = shouldDisable;
+    authButton.setAttribute("aria-disabled", String(shouldDisable));
+    authButton.classList.toggle("disabled-submit", shouldDisable);
+}
+
+function setupPasswordChecklist() {
+    if (document.body?.dataset?.authPage !== "signup") {
         return;
     }
 
-    const token = await safeGetToken();
-    const payload = decodeJwtPayload(token);
+    const passwordInput = document.getElementById("auth-password");
+    const lengthCheck = document.getElementById("length-check");
+    const numberCheck = document.getElementById("number-check");
+    const specialCheck = document.getElementById("special-check");
 
-    const candidate =
-        payload?.username ||
-        payload?.name ||
-        payload?.preferred_username ||
-        payload?.sub ||
-        "";
-
-    if (candidate) {
-        usernameEl.textContent = candidate;
-        rememberUsername(candidate);
+    if (!passwordInput || !lengthCheck || !numberCheck || !specialCheck) {
+        return;
     }
+
+    function updateCheck(element, valid, text) {
+        element.textContent = `${valid ? "✔" : "✗"} ${text}`;
+        element.classList.toggle("password-valid", valid);
+        element.classList.toggle("password-invalid", !valid);
+    }
+
+    function updatePasswordChecklist() {
+        const password = passwordInput.value;
+        const validity = isSignupPasswordValid(password);
+
+        updateCheck(lengthCheck, validity.lengthValid, "8–16 karakter hosszú jelszó");
+        updateCheck(numberCheck, validity.numberValid, "Tartalmaz számokat");
+        updateCheck(specialCheck, validity.specialValid, "Tartalmaz különleges karaktereket");
+
+        updateAuthButtonState();
+    }
+
+    passwordInput.addEventListener("input", updatePasswordChecklist);
+    updatePasswordChecklist();
 }
 
 async function setupAuthPage() {
@@ -256,8 +233,22 @@ async function setupAuthPage() {
             if (message) {
                 message.textContent = "Tölts ki minden mezőt.";
                 message.classList.add("visible");
+                message.classList.remove("success");
             }
             return;
+        }
+
+        if (page === "signup") {
+            const validity = isSignupPasswordValid(password);
+
+            if (!validity.allValid) {
+                if (message) {
+                    message.textContent = "A jelszó nem felel meg a követelményeknek.";
+                    message.classList.add("visible");
+                    message.classList.remove("success");
+                }
+                return;
+            }
         }
 
         const submitButton = form.querySelector("button[type='submit']");
@@ -265,25 +256,25 @@ async function setupAuthPage() {
 
         try {
             const serverUrl = await get_url();
+            const backendAction = page === "login" ? "login" : "signup";
 
-            if (typeof window[page] !== "function") {
-                throw new Error(`Hiányzó backend függvény: ${page}`);
+            if (typeof window[backendAction] !== "function") {
+                throw new Error(`Hiányzó backend függvény: ${backendAction}`);
             }
 
-            const result = await window[page](serverUrl, username, password);
-            const tokenFromResult = extractToken(result) || await safeGetToken();
+            await window[backendAction](serverUrl, username, password);
 
-            if (!tokenFromResult) {
+            const finalToken = await safeGetToken();
+            if (!finalToken) {
                 throw new Error("Nem érkezett token a backendtől.");
             }
-
-            rememberUsername(extractUsername(result, username) || username);
 
             if (message) {
                 message.textContent = page === "login"
                     ? "Sikeres bejelentkezés."
                     : "Sikeres regisztráció.";
                 message.classList.add("visible", "success");
+                message.classList.remove("error");
             }
 
             window.location.replace(getNextUrl("profile.html"));
@@ -293,13 +284,27 @@ async function setupAuthPage() {
                 message.textContent = page === "login"
                     ? "Sikertelen bejelentkezés."
                     : "Sikertelen regisztráció.";
-                message.classList.add("visible");
+                message.classList.add("visible", "error");
                 message.classList.remove("success");
             }
         } finally {
             if (submitButton) submitButton.disabled = false;
         }
     });
+}
+
+async function requireAuthForProfilePage() {
+    if (!window.location.pathname.endsWith("profile.html")) {
+        return true;
+    }
+
+    const token = await safeGetToken();
+    if (!token) {
+        window.location.replace(`login.html?next=${encodeURIComponent("profile.html")}`);
+        return false;
+    }
+
+    return true;
 }
 
 async function requireAuthForSubmitPage() {
@@ -405,7 +410,7 @@ async function get_url() {
                 return candidate;
             }
         } catch (error) {
-            // The candidate is unavailable, try the next one.
+            // A candidate nem elérhető, próbáljuk a következőt.
         }
     }
 
@@ -457,10 +462,11 @@ function showUploadError(message, durationMs = 10000) {
     clearTimeout(uploadErrorTimer);
     uploadStatus.textContent = message;
     uploadStatus.classList.remove("success");
-    uploadStatus.classList.add("visible");
+    uploadStatus.classList.remove("error");
+    uploadStatus.classList.add("visible", "error");
 
     uploadErrorTimer = setTimeout(() => {
-        uploadStatus.classList.remove("visible");
+        uploadStatus.classList.remove("visible", "error");
         setTimeout(() => {
             uploadStatus.textContent = "";
         }, 250);
@@ -500,6 +506,7 @@ function resetSubmitPage() {
 
     setUploadProgress(0, false);
     updateSubmitButtonState();
+    updateAuthButtonState();
 }
 
 const STATUS_POLL_INTERVAL_MS = 30000;
@@ -555,6 +562,12 @@ function updateServerStatusWidgets(isOnline) {
 
     serverAvailable = isOnline;
     updateSubmitButtonState();
+    updateAuthButtonState();
+}
+
+async function initializeServerUrl() {
+    SERVER_URL = await get_url();
+    SERVER_STATUS_URL = `${SERVER_URL}/active`;
 }
 
 async function fetchWithTimeout(url, timeoutMs, options = {}) {
@@ -604,16 +617,15 @@ if (refreshButton) {
 // ===============================
 
 async function uploadFile(file) {
-    return new Promise(async (resolve, reject) => {
-        const token = await safeGetToken();
+    const token = await safeGetToken();
 
-        if (!token) {
-            setUploadProgress(0, false);
-            showUploadError("Nincs bejelentkezve a felhasználó.");
-            reject(new Error("Missing auth token"));
-            return;
-        }
+    if (!token) {
+        setUploadProgress(0, false);
+        showUploadError("Nincs bejelentkezve a felhasználó.");
+        throw new Error("Missing auth token");
+    }
 
+    return await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
 
         setUploadProgress(0, true, "Feltöltés...");
@@ -634,21 +646,26 @@ async function uploadFile(file) {
             setUploadProgress(percent, true, label);
         });
 
-        xhr.onload = async () => {
-            try {
-                const responseText = xhr.responseText || "";
-                console.log("Feltöltve:", file.name);
-                console.log(responseText);
-                setUploadProgress(100, true, "100%");
+        xhr.onload = () => {
+            const ok = xhr.status >= 200 && xhr.status < 300;
 
-                setTimeout(() => {
-                    setUploadProgress(0, false);
-                }, 600);
-
-                resolve();
-            } catch (error) {
-                reject(error);
+            if (!ok) {
+                setUploadProgress(0, false);
+                showUploadError("Feltöltés sikertelen. Próbáld újra.");
+                reject(new Error(`Upload failed with status ${xhr.status}`));
+                return;
             }
+
+            const responseText = xhr.responseText || "";
+            console.log("Feltöltve:", file.name);
+            console.log(responseText);
+            setUploadProgress(100, true, "100%");
+
+            setTimeout(() => {
+                setUploadProgress(0, false);
+            }, 600);
+
+            resolve();
         };
 
         xhr.onerror = () => {
@@ -666,11 +683,21 @@ async function uploadFile(file) {
 // CLIP CARD CREATION
 // ===============================
 
+function escapeHtml(value) {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&#39;");
+}
+
 function createClipCard(file) {
     const card = document.createElement("div");
     card.className = "clip-card collapsed";
 
     const videoURL = URL.createObjectURL(file);
+    const safeName = escapeHtml(file.name);
 
     card.innerHTML = `
         <div class="clip-header">
@@ -686,7 +713,7 @@ function createClipCard(file) {
             <div class="info">
                 <input
                     class="filename"
-                    value="${file.name}"
+                    value="${safeName}"
                     disabled
                 >
 
@@ -777,9 +804,17 @@ function createClipCard(file) {
 
 async function handleFiles(files) {
     for (const file of files) {
-        if (file.type.startsWith("video/")) {
-            createClipCard(file);
+        if (!file.type.startsWith("video/")) {
+            continue;
+        }
+
+        createClipCard(file);
+
+        try {
             await uploadFile(file);
+        } catch (error) {
+            console.error(error);
+            break;
         }
     }
 }
@@ -806,11 +841,21 @@ function formatSize(bytes) {
 
 (async () => {
     await syncAuthNavigation();
+
+    const profileAuthOk = await requireAuthForProfilePage();
+    if (!profileAuthOk) {
+        return;
+    }
+
     await setupProfileUsername();
     await setupAuthPage();
+    setupPasswordChecklist();
     await requireAuthForSubmitPage();
 
-    // Serve status should work on all pages that contain widgets
+    await initializeServerUrl();
+
+    updateAuthButtonState();
+    updateSubmitButtonState();
     checkServerStatus();
     setInterval(checkServerStatus, STATUS_POLL_INTERVAL_MS);
 
@@ -835,7 +880,9 @@ function formatSize(bytes) {
         });
 
         fileInput.addEventListener("change", () => {
-            handleFiles(fileInput.files);
+            void handleFiles(fileInput.files).catch(error => {
+                console.error(error);
+            });
             updateSubmitButtonState();
         });
 
@@ -854,7 +901,9 @@ function formatSize(bytes) {
         dropZone.addEventListener("drop", (event) => {
             event.preventDefault();
             dropZone.style.background = "";
-            handleFiles(event.dataTransfer.files);
+            void handleFiles(event.dataTransfer.files).catch(error => {
+                console.error(error);
+            });
             updateSubmitButtonState();
         });
     }

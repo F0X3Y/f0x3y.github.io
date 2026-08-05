@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="hu">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Sign up - Clip Nézegetés</title>
+
     <link rel="icon" href="images/favicon.png" type="image/png">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body data-auth-page="signup">
 
 <div id="page-transition"></div>
@@ -27,21 +31,43 @@
     </div>
 </nav>
 
-<main>
-    <section class="submit-box">
-        <h1>Sign up</h1>
+<main class="center-page">
+    <section class="auth-box">
+        <h1>📝 Sign up</h1>
 
         <form id="auth-form">
             <div class="details">
-                <input id="auth-username" type="text" autocomplete="username" placeholder="Felhasználónév" required>
-                <input id="auth-password" type="password" autocomplete="new-password" placeholder="Jelszó" required>
+                <input
+                    id="auth-username"
+                    type="text"
+                    autocomplete="username"
+                    placeholder="Felhasználónév"
+                    required
+                >
+
+                <input
+                    id="auth-password"
+                    type="password"
+                    autocomplete="new-password"
+                    placeholder="Jelszó"
+                    minlength="8"
+                    maxlength="16"
+                    required
+                >
+
+                <div id="password-checklist" aria-live="polite">
+                    <p id="length-check">✗ 8–16 karakter hosszú jelszó</p>
+                    <p id="number-check">✗ Tartalmaz számokat</p>
+                    <p id="special-check">✗ Tartalmaz különleges karaktereket</p>
+                </div>
             </div>
 
             <button type="submit">Regisztráció</button>
         </form>
 
-        <p style="text-align:center; margin-top:16px;">
-            Van már profilod? <a href="login.html">Jelentkezz be!</a>
+        <p>
+            Van már profilod?
+            <a href="login.html">Jelentkezz be!</a>
         </p>
 
         <div id="auth-message" class="upload-status" aria-live="polite"></div>
@@ -51,5 +77,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js"></script>
 <script src="backend_comms.js"></script>
 <script src="script.js"></script>
+
 </body>
-</html>
+</html>>

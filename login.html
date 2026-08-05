@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="hu">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Log in - Clip Nézegetés</title>
+
     <link rel="icon" href="images/favicon.png" type="image/png">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body data-auth-page="login">
 
 <div id="page-transition"></div>
@@ -27,21 +31,35 @@
     </div>
 </nav>
 
-<main>
-    <section class="submit-box">
-        <h1>Log in</h1>
+<main class="center-page">
+    <section class="auth-box">
+        <h1>🔐 Log in</h1>
 
         <form id="auth-form">
             <div class="details">
-                <input id="auth-username" type="text" autocomplete="username" placeholder="Felhasználónév" required>
-                <input id="auth-password" type="password" autocomplete="current-password" placeholder="Jelszó" required>
+                <input
+                    id="auth-username"
+                    type="text"
+                    autocomplete="username"
+                    placeholder="Felhasználónév"
+                    required
+                >
+
+                <input
+                    id="auth-password"
+                    type="password"
+                    autocomplete="current-password"
+                    placeholder="Jelszó"
+                    required
+                >
             </div>
 
             <button type="submit">Bejelentkezés</button>
         </form>
 
-        <p style="text-align:center; margin-top:16px;">
-            Nincs még profilod? <a href="signup.html">Hozz létre egyet!</a>
+        <p>
+            Nincs még profilod?
+            <a href="signup.html">Hozz létre egyet!</a>
         </p>
 
         <div id="auth-message" class="upload-status" aria-live="polite"></div>
@@ -51,5 +69,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js"></script>
 <script src="backend_comms.js"></script>
 <script src="script.js"></script>
+
 </body>
 </html>
