@@ -33,9 +33,11 @@ async function hexdigest(str) {
 async function signup(url,username,pswd){//regisztrálláss
     password=await hexdigest(pswd)
     body=JSON.stringify({"username":username,"password":password})
-    console.log(await fetch(url+"/register",{method:"POST",
+    await fetch(url+"/register",{method:"POST",
         headers:{"Content-length":body.length},
         body:body
-    }))
+    })
+
+    login(url,username,pswd)
 }
 
