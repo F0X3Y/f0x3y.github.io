@@ -1428,3 +1428,9 @@ main {
     }
 
 }
+
+.text {
+    font-size:50px;
+    font-weight:800;
+    line-height:0.6;
+}
