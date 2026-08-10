@@ -19,44 +19,51 @@ const backgroundMusic =
 const DEFAULT_COVER =
     "musics/covers/default.png";
 
-
 const DEFAULT_BACKGROUND =
     "musics/default-bg.png";
 
+const VOTED_ICON =
+    "musics/voted.png";
+
 
 /*
-    A kártyák zenéje alapból teljesen néma.
-    Hoverkor felhangosodik.
+    Candidate music:
+
+    0 = teljesen néma, amikor nincs hover
 */
 const NORMAL_VOLUME =
     0;
 
 
+/*
+    Ez a hangerő lesz hover közben.
+*/
 const HOVER_VOLUME =
     0.75;
 
 
 /*
-    A default háttérzene normál hangereje.
+    Alap háttérzene hangereje.
 */
 const BACKGROUND_VOLUME =
     0.15;
 
 
+/*
+    Fade idők.
+*/
 const AUDIO_FADE_DURATION =
-    650;
-
+    500;
 
 const BACKGROUND_FADE_DURATION =
-    900;
+    700;
 
 
 /* =========================================================
    STATE
 ========================================================= */
 
-let songs =
-    [];
+let songs = [];
 
 let currentHoveredCard =
     null;
@@ -220,8 +227,13 @@ function createCard(
             "auto";
 
 
+        /*
+            NAGYON FONTOS:
+
+            Alapból teljesen néma.
+        */
         audio.volume =
-            NORMAL_VOLUME;
+            0;
 
 
         audio.setAttribute(
@@ -241,6 +253,76 @@ function createCard(
 
         audios.add(
             audio
+        );
+
+    }
+
+
+    /* =====================================================
+       VOTED PILL
+    ====================================================== */
+
+    const votedPill =
+        document.createElement("div");
+
+
+    votedPill.className =
+        "voted-pill";
+
+
+    const votedIcon =
+        document.createElement("img");
+
+
+    votedIcon.src =
+        VOTED_ICON;
+
+
+    votedIcon.alt =
+        "";
+
+
+    const votedText =
+        document.createElement("span");
+
+
+    votedText.textContent =
+        "Voted";
+
+
+    votedPill.appendChild(
+        votedIcon
+    );
+
+
+    votedPill.appendChild(
+        votedText
+    );
+
+
+    card.appendChild(
+        votedPill
+    );
+
+
+    /* =====================================================
+       CHECK LOCAL VOTE
+    ====================================================== */
+
+    const voteKey =
+        `musiccomp-vote-${index}`;
+
+
+    const alreadyVoted =
+        localStorage.getItem(
+            voteKey
+        ) === "true";
+
+
+    if (alreadyVoted) {
+
+        card.classList.add(
+            "has-vote"
         );
 
     }
@@ -429,7 +511,9 @@ function createCard(
 
 
     vote.textContent =
-        "Vote";
+        alreadyVoted
+            ? "Voted"
+            : "Vote";
 
 
     vote.setAttribute(
@@ -438,91 +522,14 @@ function createCard(
     );
 
 
-    let votes =
-        Number(song.votes) ||
-        0;
-
-
-    const voteKey =
-        `musiccomp-vote-${index}`;
-
-
-    const alreadyVoted =
-        localStorage.getItem(
-            voteKey
-        ) === "true";
-
-
-    /* =====================================================
-       VOTED PILL
-    ====================================================== */
-
-    const votedPill =
-        document.createElement("div");
-
-
-    votedPill.className =
-        "voted-pill";
-
-
-    const votedIcon =
-        document.createElement("img");
-
-
-    votedIcon.src =
-        "musics/covers/voted.png";
-
-
-    votedIcon.alt =
-        "";
-
-
-    const votedText =
-        document.createElement("span");
-
-
-    votedText.textContent =
-        "Voted";
-
-
-    votedPill.appendChild(
-        votedIcon
-    );
-
-
-    votedPill.appendChild(
-        votedText
-    );
-
-
-    card.appendChild(
-        votedPill
-    );
-
-
-    /* =====================================================
-       RESTORE VOTE
-    ====================================================== */
-
     if (alreadyVoted) {
 
         vote.classList.add(
             "voted"
         );
 
-        vote.textContent =
-            "Voted";
-
-        card.classList.add(
-            "has-vote"
-        );
-
     }
 
-
-    /* =====================================================
-       VOTE EVENT
-    ====================================================== */
 
     vote.addEventListener(
         "click",
@@ -536,10 +543,6 @@ function createCard(
                     "voted"
                 );
 
-
-            /* ---------------------------------------------
-               REMOVE VOTE
-            ---------------------------------------------- */
 
             if (hasVoted) {
 
@@ -562,17 +565,7 @@ function createCard(
                 );
 
 
-                votes--;
-
-
-            }
-
-
-            /* ---------------------------------------------
-               ADD VOTE
-            ---------------------------------------------- */
-
-            else {
+            } else {
 
                 vote.classList.add(
                     "voted"
@@ -593,22 +586,14 @@ function createCard(
                     "true"
                 );
 
-
-                votes++;
-
             }
-
-
-            console.log(
-                `"${song.title}" votes: ${votes}`
-            );
 
         }
     );
 
 
     /* =====================================================
-       ACTIONS
+       BUILD ACTIONS
     ====================================================== */
 
     actions.appendChild(
@@ -740,7 +725,7 @@ function handleCardEnter(
 
 
     /* =====================================================
-       DEFAULT MUSIC
+       BACKGROUND MUSIC
     ====================================================== */
 
     fadeAudio(
@@ -751,7 +736,52 @@ function handleCardEnter(
 
 
     /* =====================================================
-       CARD AUDIO
+       STOP ALL OTHER CANDIDATES
+    ====================================================== */
+
+    audios.forEach(
+        otherAudio => {
+
+            if (
+                otherAudio !== audio
+            ) {
+
+                fadeAudio(
+                    otherAudio,
+                    0,
+                    AUDIO_FADE_DURATION
+                );
+
+
+                /*
+                    Fade után megállítjuk,
+                    így tényleg semmit nem hallasz.
+                */
+                setTimeout(
+                    () => {
+
+                        if (
+                            otherAudio.volume <= 0.001 &&
+                            currentHoveredCard !==
+                            otherAudio.closest(".music-card")
+                        ) {
+
+                            otherAudio.pause();
+
+                        }
+
+                    },
+                    AUDIO_FADE_DURATION
+                );
+
+            }
+
+        }
+    );
+
+
+    /* =====================================================
+       CURRENT CARD AUDIO
     ====================================================== */
 
     if (audio) {
@@ -786,6 +816,11 @@ function handleCardLeave(
     audio
 ) {
 
+    /*
+        Ha közvetlenül egy másik kártyára mentünk,
+        akkor az új kártya már currentHoveredCard.
+    */
+
     if (
         currentHoveredCard === card
     ) {
@@ -797,14 +832,14 @@ function handleCardLeave(
 
 
     /* =====================================================
-       CARD AUDIO
+       CURRENT AUDIO FADE OUT
     ====================================================== */
 
     if (audio) {
 
         fadeAudio(
             audio,
-            NORMAL_VOLUME,
+            0,
             AUDIO_FADE_DURATION
         );
 
@@ -813,11 +848,32 @@ function handleCardLeave(
             "is-playing"
         );
 
+
+        /*
+            Nem állítjuk le azonnal.
+            Fade után pause.
+        */
+        setTimeout(
+            () => {
+
+                if (
+                    audio.volume <= 0.001 &&
+                    currentHoveredCard !== card
+                ) {
+
+                    audio.pause();
+
+                }
+
+            },
+            AUDIO_FADE_DURATION
+        );
+
     }
 
 
     /* =====================================================
-       BACKGROUND MUSIC
+       RESTORE BACKGROUND MUSIC
     ====================================================== */
 
     requestAnimationFrame(
@@ -883,17 +939,10 @@ function changeBackground(
         };
 
 
-    /*
-        Hover background blur.
-        Ezt az értéket tudod állítani.
-    */
     background.style.filter =
         "blur(5px)";
 
 
-    /*
-        Hover background zoom.
-    */
     background.style.transform =
         "scale(1.06)";
 
@@ -937,15 +986,12 @@ function startAudioIfNeeded(
 ) {
 
     if (!audio) {
-
         return;
-
     }
 
 
     /*
-        Ha már játszik,
-        NEM indítjuk újra.
+        Ha már fut, NEM indítjuk újra.
     */
 
     if (
@@ -983,9 +1029,7 @@ function fadeAudio(
 ) {
 
     if (!audio) {
-
         return;
-
     }
 
 
@@ -1031,6 +1075,9 @@ function fadeAudio(
             );
 
 
+        /*
+            Smoothstep
+        */
         const eased =
             progress *
             progress *
@@ -1092,31 +1139,56 @@ function unlockAudio() {
     ====================================================== */
 
     backgroundMusic.volume =
-        BACKGROUND_VOLUME;
+        0;
 
 
     backgroundMusic
         .play()
+        .then(
+            () => {
+
+                /*
+                    Ha nincs hover,
+                    szépen felúszik.
+                */
+
+                if (
+                    !currentHoveredCard
+                ) {
+
+                    fadeAudio(
+                        backgroundMusic,
+                        BACKGROUND_VOLUME,
+                        BACKGROUND_FADE_DURATION
+                    );
+
+                }
+
+            }
+        )
         .catch(
             () => {}
         );
 
 
     /* =====================================================
-       ALL CANDIDATE MUSIC
+       CANDIDATE AUDIO
     ====================================================== */
+
+    /*
+        FONTOS:
+
+        Nem indítjuk el az összes candidate zenét!
+
+        Csak akkor fog elindulni egy preview,
+        amikor ténylegesen hoverelsz rajta.
+    */
 
     audios.forEach(
         audio => {
 
             audio.volume =
-                NORMAL_VOLUME;
-
-
-            audio.play()
-                .catch(
-                    () => {}
-                );
+                0;
 
         }
     );

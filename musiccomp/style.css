@@ -56,6 +56,7 @@ body {
     /*
         220 x 440 = 1:2
     */
+
     --card-expanded-width:
         440px;
 
@@ -94,11 +95,6 @@ body {
     z-index:
         -3;
 
-    /*
-        FONTOS:
-        Ez már nem a default cover.
-        Ez a külön default-bg.png.
-    */
     background-image:
         url("musics/default-bg.png");
 
@@ -240,35 +236,34 @@ main {
 }
 
 
-.hero h1 {
-
-    margin:
-        0;
+.text {
 
     font-size:
-        clamp(
-            40px,
-            5vw,
-            72px
-        );
+        50px;
+
+    font-weight:
+        800;
 
     line-height:
-        0.95;
+        0.55;
 
     letter-spacing:
-        -0.055em;
+        -0.04em;
 }
 
 
 .hero p {
 
     margin:
-        16px
+        22px
         0
         0;
 
     font-size:
-        17px;
+        20px;
+
+    font-weight:
+        300;
 
     color:
         var(--text-secondary);
@@ -635,7 +630,7 @@ main {
         14px;
 
     z-index:
-        5;
+        10;
 
     height:
         32px;
@@ -736,7 +731,7 @@ main {
 
 
 /* =========================================================
-   HIDE PILL WHILE OPEN
+   HIDE VOTED PILL WHILE OPEN
 ========================================================= */
 
 .music-card:hover .voted-pill {
@@ -825,7 +820,7 @@ main {
         5px;
 
     padding-right:
-        55px;
+        20px;
 
     font-size:
         21px;
@@ -869,7 +864,7 @@ main {
         0;
 
     padding-right:
-        55px;
+        20px;
 
     font-size:
         14px;
@@ -970,6 +965,9 @@ main {
         rgba(255, 255, 255, 0.12);
 
     backdrop-filter:
+        blur(12px);
+
+    -webkit-backdrop-filter:
         blur(12px);
 }
 
@@ -1301,7 +1299,7 @@ main {
     }
 
 
-    .hero h1 {
+    .text {
 
         font-size:
             38px;
@@ -1427,10 +1425,4 @@ main {
             20px;
     }
 
-}
-
-.text {
-    font-size:50px;
-    font-weight:800;
-    line-height:0.6;
 }
