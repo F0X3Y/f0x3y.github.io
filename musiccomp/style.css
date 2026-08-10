@@ -53,10 +53,6 @@ body {
     --card-size:
         220px;
 
-    /*
-        220 x 440 = 1:2
-    */
-
     --card-expanded-width:
         440px;
 
@@ -125,7 +121,7 @@ body {
     transition:
 
         background-image
-            0.2s ease,
+            0.25s ease,
 
         filter
             0.6s cubic-bezier(.2,.8,.2,1),
@@ -160,9 +156,7 @@ body {
 
         linear-gradient(
             180deg,
-
             rgba(0, 0, 0, 0.42),
-
             rgba(0, 0, 0, 0.70)
         );
 }
@@ -248,7 +242,7 @@ main {
         0.55;
 
     letter-spacing:
-        -0.04em;
+        -0.045em;
 }
 
 
@@ -263,7 +257,7 @@ main {
         20px;
 
     font-weight:
-        300;
+        400;
 
     color:
         var(--text-secondary);
@@ -481,10 +475,6 @@ main {
 }
 
 
-/* =========================================================
-   HOVER COVER
-========================================================= */
-
 .music-card:hover .cover {
 
     opacity:
@@ -654,7 +644,7 @@ main {
         999px;
 
     background:
-        rgba(255, 255, 255, 0.88);
+        rgba(255, 255, 255, 0.92);
 
     color:
         #000;
@@ -695,10 +685,6 @@ main {
 }
 
 
-/* =========================================================
-   VOTED ICON
-========================================================= */
-
 .voted-pill img {
 
     width:
@@ -715,10 +701,6 @@ main {
 }
 
 
-/* =========================================================
-   SHOW VOTED PILL
-========================================================= */
-
 .music-card.has-vote .voted-pill {
 
     opacity:
@@ -729,10 +711,6 @@ main {
         scale(1);
 }
 
-
-/* =========================================================
-   HIDE VOTED PILL WHILE OPEN
-========================================================= */
 
 .music-card:hover .voted-pill {
 
@@ -820,7 +798,7 @@ main {
         5px;
 
     padding-right:
-        20px;
+        55px;
 
     font-size:
         21px;
@@ -864,7 +842,7 @@ main {
         0;
 
     padding-right:
-        20px;
+        55px;
 
     font-size:
         14px;
@@ -965,9 +943,6 @@ main {
         rgba(255, 255, 255, 0.12);
 
     backdrop-filter:
-        blur(12px);
-
-    -webkit-backdrop-filter:
         blur(12px);
 }
 
@@ -1172,10 +1147,6 @@ main {
 }
 
 
-/* =========================================================
-   VOTED BUTTON
-========================================================= */
-
 .vote-button.voted {
 
     background:
@@ -1194,7 +1165,7 @@ main {
 
 
 /* =========================================================
-   PLAYING STATE
+   PLAYING CARD
 ========================================================= */
 
 .music-card.is-playing {
@@ -1202,6 +1173,299 @@ main {
     box-shadow:
         0 25px 80px
         rgba(0, 0, 0, 0.45);
+}
+
+
+/* =========================================================
+   MUSIC PLAYER
+========================================================= */
+
+#music-player {
+
+    position:
+        fixed;
+
+    top:
+        28px;
+
+    right:
+        30px;
+
+    z-index:
+        100;
+
+    height:
+        52px;
+
+    min-width:
+        130px;
+
+    padding:
+        0
+        14px
+        0
+        9px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        10px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+    border-radius:
+        999px;
+
+    background:
+        rgba(20, 20, 20, 0.42);
+
+    color:
+        white;
+
+    backdrop-filter:
+        blur(24px)
+        saturate(140%);
+
+    -webkit-backdrop-filter:
+        blur(24px)
+        saturate(140%);
+
+    box-shadow:
+        0 12px 45px
+        rgba(0, 0, 0, 0.30);
+
+    cursor:
+        pointer;
+
+    transition:
+
+        transform
+            0.25s cubic-bezier(.2,.8,.2,1),
+
+        background
+            0.25s ease,
+
+        border-color
+            0.25s ease;
+}
+
+
+#music-player:hover {
+
+    transform:
+        scale(1.035);
+
+    background:
+        rgba(35, 35, 35, 0.58);
+
+    border-color:
+        rgba(255, 255, 255, 0.20);
+}
+
+
+#music-player:active {
+
+    transform:
+        scale(0.97);
+}
+
+
+/* =========================================================
+   PLAYER ICON
+========================================================= */
+
+.player-icon {
+
+    width:
+        34px;
+
+    height:
+        34px;
+
+    flex-shrink:
+        0;
+
+    border-radius:
+        50%;
+
+    overflow:
+        hidden;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    background:
+        rgba(255, 255, 255, 0.12);
+}
+
+
+#player-canvas {
+
+    width:
+        34px;
+
+    height:
+        34px;
+
+    display:
+        block;
+}
+
+
+/* =========================================================
+   VISUALIZER
+========================================================= */
+
+.visualizer {
+
+    width:
+        34px;
+
+    height:
+        28px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    gap:
+        3px;
+}
+
+
+.visualizer span {
+
+    width:
+        3px;
+
+    height:
+        7px;
+
+    border-radius:
+        999px;
+
+    background:
+        rgba(255, 255, 255, 0.82);
+
+    transform-origin:
+        center;
+
+    transition:
+        height
+        0.15s ease;
+}
+
+
+/* =========================================================
+   VISUALIZER ANIMATION
+========================================================= */
+
+#music-player.playing .visualizer span:nth-child(1) {
+
+    animation:
+        visualizer1
+        0.72s
+        ease-in-out
+        infinite;
+}
+
+
+#music-player.playing .visualizer span:nth-child(2) {
+
+    animation:
+        visualizer2
+        0.54s
+        ease-in-out
+        infinite;
+}
+
+
+#music-player.playing .visualizer span:nth-child(3) {
+
+    animation:
+        visualizer3
+        0.82s
+        ease-in-out
+        infinite;
+}
+
+
+#music-player.playing .visualizer span:nth-child(4) {
+
+    animation:
+        visualizer4
+        0.62s
+        ease-in-out
+        infinite;
+}
+
+
+@keyframes visualizer1 {
+
+    0%,
+    100% {
+        height: 7px;
+    }
+
+    50% {
+        height: 20px;
+    }
+}
+
+
+@keyframes visualizer2 {
+
+    0%,
+    100% {
+        height: 18px;
+    }
+
+    50% {
+        height: 6px;
+    }
+}
+
+
+@keyframes visualizer3 {
+
+    0%,
+    100% {
+        height: 11px;
+    }
+
+    50% {
+        height: 23px;
+    }
+}
+
+
+@keyframes visualizer4 {
+
+    0%,
+    100% {
+        height: 19px;
+    }
+
+    50% {
+        height: 8px;
+    }
 }
 
 
@@ -1255,13 +1519,11 @@ main {
 
     0%,
     100% {
-
         transform:
             translateX(0);
     }
 
     50% {
-
         transform:
             translateX(7px);
     }
@@ -1413,6 +1675,19 @@ main {
 
         height:
             18px;
+    }
+
+
+    #music-player {
+
+        top:
+            18px;
+
+        right:
+            18px;
+
+        height:
+            48px;
     }
 
 

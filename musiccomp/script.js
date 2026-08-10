@@ -11,29 +11,39 @@ const background =
 const backgroundMusic =
     document.getElementById("background-music");
 
+const musicPlayer =
+    document.getElementById("music-player");
+
+const playerCanvas =
+    document.getElementById("player-canvas");
+
+const playerContext =
+    playerCanvas.getContext("2d");
+
 
 /* =========================================================
    SETTINGS
 ========================================================= */
 
-const DEFAULT_BG =
-    "musics/default-bg.png";
-
 const DEFAULT_COVER =
     "musics/covers/default.png";
 
-const VOTED_ICON =
-    "musics/covers/voted.png";
+const DEFAULT_BACKGROUND =
+    "musics/default-bg.png";
+
+const PLAYER_GIF =
+    "musics/player.gif";
 
 
 /*
-    Candidate music:
+    Candidate music.
 
-    0 = completely silent when not hovered
-    0.75 = volume when hovered
+    Alapból hallható legyen, de ne legyen olyan hangos,
+    hogy az összes jelölt egyszerre szétrobbanjon.
 */
+
 const NORMAL_VOLUME =
-    0;
+    0.08;
 
 const HOVER_VOLUME =
     0.75;
@@ -42,18 +52,27 @@ const HOVER_VOLUME =
 /*
     Background music.
 */
+
 const BACKGROUND_VOLUME =
-    0.15;
+    0.18;
+
+const BACKGROUND_HOVER_VOLUME =
+    0.025;
+
+
+const AUDIO_FADE_DURATION =
+    350;
+
+const BACKGROUND_FADE_DURATION =
+    450;
 
 
 /*
-    Fade durations.
+    GIF animation.
 */
-const AUDIO_FADE_DURATION =
-    650;
 
-const BACKGROUND_FADE_DURATION =
-    900;
+const PLAYER_FRAME_DURATION =
+    45;
 
 
 /* =========================================================
@@ -68,40 +87,523 @@ let currentHoveredCard =
 let audioUnlocked =
     false;
 
+let backgroundMusicEnabled =
+    false;
 
-/*
-    All candidate <audio> elements.
-*/
 const audios =
     new Set();
 
 
 /*
-    Currently running fade animations.
-
-    This is important because if you move directly from
-    Card A -> Card B, the old fade animation must be
-    cancelled instead of fighting with the new one.
+    Player GIF frames.
 */
-const audioFadeAnimations =
-    new Map();
 
+let playerFrames = [];
+
+let playerFrameDurations = [];
+
+let playerFrameWidth = 0;
+
+let playerFrameHeight = 0;
+
+let playerFrameIndex = 0;
+
+let playerAnimationId = null;
+
+let playerAnimationDirection =
+    1;
+
+let playerAnimationPlaying =
+    false;
+
+
+/* =========================================================
+   LOAD GIF
+========================================================= */
 
 /*
-    Background fade animation.
+    A gifuct-js könyvtár segítségével
+    kiolvassuk a GIF összes frame-jét.
+
+    Ez azért kell, mert a GIF <img>-ként nem
+    játszható visszafelé.
 */
-let backgroundFadeAnimation =
-    null;
+
+async function loadPlayerGif() {
+
+    try {
+
+        const module =
+            await import(
+                "https://cdn.jsdelivr.net/npm/gifuct-js@2.1.2/+esm"
+            );
 
 
-/*
-    Background image change token.
+        const response =
+            await fetch(
+                PLAYER_GIF
+            );
 
-    Prevents an old image preload from replacing a newer
-    background when the user moves quickly between cards.
-*/
-let backgroundChangeToken =
-    0;
+
+        if (!response.ok) {
+
+            throw new Error(
+                `GIF HTTP ${response.status}`
+            );
+
+        }
+
+
+        const buffer =
+            await response.arrayBuffer();
+
+
+        const gif =
+            module.parseGIF(
+                buffer
+            );
+
+
+        const frames =
+            module.decompressFrames(
+                gif,
+                true
+            );
+
+
+        if (
+            !frames ||
+            frames.length === 0
+        ) {
+
+            throw new Error(
+                "A GIF nem tartalmaz frame-eket."
+            );
+
+        }
+
+
+        playerFrameWidth =
+            gif.lsd.width;
+
+
+        playerFrameHeight =
+            gif.lsd.height;
+
+
+        playerCanvas.width =
+            playerFrameWidth;
+
+
+        playerCanvas.height =
+            playerFrameHeight;
+
+
+        /*
+            A GIF frame-ekből valódi canvas képeket készítünk.
+        */
+
+        const tempCanvas =
+            document.createElement(
+                "canvas"
+            );
+
+
+        tempCanvas.width =
+            playerFrameWidth;
+
+
+        tempCanvas.height =
+            playerFrameHeight;
+
+
+        const tempContext =
+            tempCanvas.getContext(
+                "2d"
+            );
+
+
+        playerFrames =
+            [];
+
+
+        playerFrameDurations =
+            [];
+
+
+        for (
+            const frame of frames
+        ) {
+
+            /*
+                A frame patch-et rajzoljuk a megfelelő helyre.
+            */
+
+            const imageData =
+                tempContext.createImageData(
+                    frame.dims.width,
+                    frame.dims.height
+                );
+
+
+            imageData.data.set(
+                frame.patch
+            );
+
+
+            tempContext.putImageData(
+                imageData,
+                frame.dims.left,
+                frame.dims.top
+            );
+
+
+            /*
+                Minden frame-ről teljes screenshotot készítünk.
+            */
+
+            const frameCanvas =
+                document.createElement(
+                    "canvas"
+                );
+
+
+            frameCanvas.width =
+                playerFrameWidth;
+
+
+            frameCanvas.height =
+                playerFrameHeight;
+
+
+            const frameContext =
+                frameCanvas.getContext(
+                    "2d"
+                );
+
+
+            frameContext.drawImage(
+                tempCanvas,
+                0,
+                0
+            );
+
+
+            playerFrames.push(
+                frameCanvas
+            );
+
+
+            /*
+                GIF delay általában századmásodpercben
+                érkezik.
+            */
+
+            const duration =
+                Math.max(
+                    20,
+                    (frame.delay || 5) * 10
+                );
+
+
+            playerFrameDurations.push(
+                duration
+            );
+
+        }
+
+
+        /*
+            Első frame megjelenítése.
+        */
+
+        playerFrameIndex =
+            0;
+
+
+        drawPlayerFrame();
+
+
+        console.log(
+            `Player GIF betöltve: ${playerFrames.length} frame`
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Nem sikerült beolvasni a player.gif fájlt:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   DRAW PLAYER FRAME
+========================================================= */
+
+function drawPlayerFrame() {
+
+    if (
+        !playerFrames.length
+    ) {
+
+        return;
+
+    }
+
+
+    const frame =
+        playerFrames[
+            playerFrameIndex
+        ];
+
+
+    playerContext.clearRect(
+        0,
+        0,
+        playerFrameWidth,
+        playerFrameHeight
+    );
+
+
+    playerContext.drawImage(
+        frame,
+        0,
+        0
+    );
+
+}
+
+
+/* =========================================================
+   ANIMATE PLAYER
+========================================================= */
+
+function animatePlayer() {
+
+    if (
+        !playerAnimationPlaying
+    ) {
+
+        return;
+
+    }
+
+
+    const duration =
+        playerFrameDurations[
+            playerFrameIndex
+        ] ||
+        PLAYER_FRAME_DURATION;
+
+
+    playerAnimationId =
+        setTimeout(
+            () => {
+
+                /*
+                    Előre vagy visszafelé lépünk.
+                */
+
+                playerFrameIndex +=
+                    playerAnimationDirection;
+
+
+                /*
+                    Elértük a végét.
+                */
+
+                if (
+                    playerFrameIndex >=
+                    playerFrames.length
+                ) {
+
+                    playerFrameIndex =
+                        playerFrames.length - 1;
+
+
+                    playerAnimationPlaying =
+                        false;
+
+
+                    drawPlayerFrame();
+
+                    return;
+                }
+
+
+                /*
+                    Elértük az elejét.
+                */
+
+                if (
+                    playerFrameIndex < 0
+                ) {
+
+                    playerFrameIndex =
+                        0;
+
+
+                    playerAnimationPlaying =
+                        false;
+
+
+                    drawPlayerFrame();
+
+                    return;
+                }
+
+
+                drawPlayerFrame();
+
+                animatePlayer();
+
+            },
+            duration
+        );
+
+}
+
+
+/* =========================================================
+   PLAY PLAYER ANIMATION
+========================================================= */
+
+function animatePlayerForward() {
+
+    if (
+        !playerFrames.length
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+        Ha már a pause állapotnál vagyunk,
+        akkor visszafelé kell menni.
+    */
+
+    playerAnimationDirection =
+        -1;
+
+
+    /*
+        Ha az elején vagyunk, akkor nincs mit
+        visszafelé játszani.
+
+        Ilyenkor előre megyünk.
+    */
+
+    if (
+        playerFrameIndex <= 0
+    ) {
+
+        playerFrameIndex =
+            0;
+
+        playerAnimationDirection =
+            1;
+
+    }
+
+
+    stopPlayerAnimation();
+
+
+    playerAnimationPlaying =
+        true;
+
+
+    animatePlayer();
+
+}
+
+
+/* =========================================================
+   PAUSE PLAYER ANIMATION
+========================================================= */
+
+function animatePlayerBackward() {
+
+    if (
+        !playerFrames.length
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+        Pause esetén a play állapotból
+        a pause állapotba megyünk.
+
+        Tehát előre.
+    */
+
+    playerAnimationDirection =
+        1;
+
+
+    /*
+        Ha már a végén vagyunk,
+        nincs mit tovább játszani.
+    */
+
+    if (
+        playerFrameIndex >=
+        playerFrames.length - 1
+    ) {
+
+        playerFrameIndex =
+            playerFrames.length - 1;
+
+        return;
+
+    }
+
+
+    stopPlayerAnimation();
+
+
+    playerAnimationPlaying =
+        true;
+
+
+    animatePlayer();
+
+}
+
+
+/* =========================================================
+   STOP PLAYER ANIMATION
+========================================================= */
+
+function stopPlayerAnimation() {
+
+    playerAnimationPlaying =
+        false;
+
+
+    if (
+        playerAnimationId !== null
+    ) {
+
+        clearTimeout(
+            playerAnimationId
+        );
+
+        playerAnimationId =
+            null;
+
+    }
+
+}
 
 
 /* =========================================================
@@ -113,7 +615,9 @@ async function loadSongs() {
     try {
 
         const response =
-            await fetch("songs.json");
+            await fetch(
+                "songs.json"
+            );
 
 
         if (!response.ok) {
@@ -129,7 +633,9 @@ async function loadSongs() {
             await response.json();
 
 
-        if (!Array.isArray(songs)) {
+        if (
+            !Array.isArray(songs)
+        ) {
 
             throw new Error(
                 "A songs.json formátuma hibás."
@@ -147,7 +653,6 @@ async function loadSongs() {
             `${songs.length} jelölt betöltve.`
         );
 
-
     } catch (error) {
 
         console.error(
@@ -156,6 +661,7 @@ async function loadSongs() {
         );
 
     }
+
 }
 
 
@@ -169,7 +675,9 @@ function createCard(
 ) {
 
     const card =
-        document.createElement("article");
+        document.createElement(
+            "article"
+        );
 
 
     card.className =
@@ -185,7 +693,9 @@ function createCard(
     ====================================================== */
 
     const cover =
-        document.createElement("img");
+        document.createElement(
+            "img"
+        );
 
 
     cover.className =
@@ -209,10 +719,6 @@ function createCard(
         "lazy";
 
 
-    /*
-        If the cover doesn't exist,
-        use default.png.
-    */
     cover.onerror = () => {
 
         cover.src =
@@ -238,7 +744,9 @@ function createCard(
     ====================================================== */
 
     const votedPill =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
 
     votedPill.className =
@@ -246,28 +754,23 @@ function createCard(
 
 
     const votedIcon =
-        document.createElement("img");
+        document.createElement(
+            "img"
+        );
 
 
     votedIcon.src =
-        VOTED_ICON;
+        "musics/voted.png";
 
 
     votedIcon.alt =
         "";
 
 
-    votedIcon.onerror = () => {
-
-        console.warn(
-            `Voted icon nem található: ${VOTED_ICON}`
-        );
-
-    };
-
-
     const votedText =
-        document.createElement("span");
+        document.createElement(
+            "span"
+        );
 
 
     votedText.textContent =
@@ -297,10 +800,14 @@ function createCard(
         null;
 
 
-    if (song.preview) {
+    if (
+        song.preview
+    ) {
 
         audio =
-            document.createElement("audio");
+            document.createElement(
+                "audio"
+            );
 
 
         audio.src =
@@ -346,7 +853,9 @@ function createCard(
     ====================================================== */
 
     const info =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
 
     info.className =
@@ -358,7 +867,9 @@ function createCard(
     ====================================================== */
 
     const title =
-        document.createElement("h2");
+        document.createElement(
+            "h2"
+        );
 
 
     title.textContent =
@@ -371,7 +882,9 @@ function createCard(
     ====================================================== */
 
     const artist =
-        document.createElement("p");
+        document.createElement(
+            "p"
+        );
 
 
     artist.textContent =
@@ -387,10 +900,14 @@ function createCard(
         null;
 
 
-    if (song.description) {
+    if (
+        song.description
+    ) {
 
         description =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
 
 
         description.className =
@@ -408,17 +925,23 @@ function createCard(
     ====================================================== */
 
     const meta =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
 
     meta.className =
         "info-meta";
 
 
-    if (song.album) {
+    if (
+        song.album
+    ) {
 
         const album =
-            document.createElement("span");
+            document.createElement(
+                "span"
+            );
 
 
         album.textContent =
@@ -432,10 +955,14 @@ function createCard(
     }
 
 
-    if (song.year) {
+    if (
+        song.year
+    ) {
 
         const year =
-            document.createElement("span");
+            document.createElement(
+                "span"
+            );
 
 
         year.textContent =
@@ -449,10 +976,14 @@ function createCard(
     }
 
 
-    if (song.genre) {
+    if (
+        song.genre
+    ) {
 
         const genre =
-            document.createElement("span");
+            document.createElement(
+                "span"
+            );
 
 
         genre.textContent =
@@ -471,7 +1002,9 @@ function createCard(
     ====================================================== */
 
     const actions =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
 
     actions.className =
@@ -479,11 +1012,13 @@ function createCard(
 
 
     /* =====================================================
-       SPOTIFY BUTTON
+       SPOTIFY
     ====================================================== */
 
     const spotify =
-        document.createElement("a");
+        document.createElement(
+            "a"
+        );
 
 
     spotify.className =
@@ -507,26 +1042,14 @@ function createCard(
         "Open on Spotify ↗";
 
 
-    /*
-        Prevent card interaction from interfering
-        when clicking the Spotify button.
-    */
-    spotify.addEventListener(
-        "click",
-        event => {
-
-            event.stopPropagation();
-
-        }
-    );
-
-
     /* =====================================================
-       VOTE BUTTON
+       VOTE
     ====================================================== */
 
     const vote =
-        document.createElement("button");
+        document.createElement(
+            "button"
+        );
 
 
     vote.className =
@@ -552,24 +1075,8 @@ function createCard(
         0;
 
 
-    /*
-        IMPORTANT:
-
-        Using the song ID is much safer than using
-        the array index.
-
-        If you reorder songs.json, votes won't move
-        to another song.
-
-        If "id" doesn't exist, fall back to index.
-    */
-    const voteIdentifier =
-        song.id ??
-        index;
-
-
     const voteKey =
-        `musiccomp-vote-${voteIdentifier}`;
+        `musiccomp-vote-${index}`;
 
 
     const alreadyVoted =
@@ -578,11 +1085,14 @@ function createCard(
         ) === "true";
 
 
-    if (alreadyVoted) {
+    if (
+        alreadyVoted
+    ) {
 
         vote.classList.add(
             "voted"
         );
+
 
         vote.textContent =
             "Voted";
@@ -608,7 +1118,9 @@ function createCard(
                 );
 
 
-            if (hasVoted) {
+            if (
+                hasVoted
+            ) {
 
                 vote.classList.remove(
                     "voted"
@@ -619,18 +1131,17 @@ function createCard(
                     "Vote";
 
 
-                localStorage.removeItem(
-                    voteKey
-                );
-
-
                 card.classList.remove(
                     "has-vote"
                 );
 
 
-                votes--;
+                localStorage.removeItem(
+                    voteKey
+                );
 
+
+                votes--;
 
             } else {
 
@@ -643,14 +1154,14 @@ function createCard(
                     "Voted";
 
 
-                localStorage.setItem(
-                    voteKey,
-                    "true"
+                card.classList.add(
+                    "has-vote"
                 );
 
 
-                card.classList.add(
-                    "has-vote"
+                localStorage.setItem(
+                    voteKey,
+                    "true"
                 );
 
 
@@ -666,10 +1177,6 @@ function createCard(
         }
     );
 
-
-    /* =====================================================
-       BUILD ACTIONS
-    ====================================================== */
 
     actions.appendChild(
         spotify
@@ -695,7 +1202,9 @@ function createCard(
     );
 
 
-    if (description) {
+    if (
+        description
+    ) {
 
         info.appendChild(
             description
@@ -740,7 +1249,7 @@ function createCard(
 
 
     /* =====================================================
-       HOVER ENTER
+       HOVER
     ====================================================== */
 
     card.addEventListener(
@@ -757,10 +1266,6 @@ function createCard(
     );
 
 
-    /* =====================================================
-       HOVER LEAVE
-    ====================================================== */
-
     card.addEventListener(
         "mouseleave",
         () => {
@@ -772,6 +1277,7 @@ function createCard(
 
         }
     );
+
 }
 
 
@@ -785,13 +1291,6 @@ function handleCardEnter(
     audio
 ) {
 
-    /*
-        Immediately replace the currently hovered card.
-
-        This means Card A -> Card B doesn't create a
-        moment where the page thinks there is no hovered
-        card.
-    */
     currentHoveredCard =
         card;
 
@@ -806,28 +1305,30 @@ function handleCardEnter(
 
 
     /* =====================================================
-       DEFAULT BACKGROUND MUSIC
+       BACKGROUND MUSIC
     ====================================================== */
 
-    fadeAudio(
-        backgroundMusic,
-        0,
-        BACKGROUND_FADE_DURATION
-    );
+    if (
+        backgroundMusicEnabled
+    ) {
+
+        fadeAudio(
+            backgroundMusic,
+            BACKGROUND_HOVER_VOLUME,
+            BACKGROUND_FADE_DURATION
+        );
+
+    }
 
 
     /* =====================================================
        CARD AUDIO
     ====================================================== */
 
-    if (audio) {
+    if (
+        audio
+    ) {
 
-        /*
-            Start ONLY if it has never been started.
-
-            Once playing, it remains playing forever.
-            We only change its volume.
-        */
         startAudioIfNeeded(
             audio
         );
@@ -845,6 +1346,7 @@ function handleCardEnter(
         );
 
     }
+
 }
 
 
@@ -856,17 +1358,6 @@ function handleCardLeave(
     card,
     audio
 ) {
-
-    /*
-        IMPORTANT:
-
-        If we immediately move to another card,
-        mouseenter of the next card has already set
-        currentHoveredCard to the new card.
-
-        Therefore we should NOT reset the background
-        music here if another card is already hovered.
-    */
 
     if (
         currentHoveredCard === card
@@ -882,7 +1373,9 @@ function handleCardLeave(
        CARD AUDIO
     ====================================================== */
 
-    if (audio) {
+    if (
+        audio
+    ) {
 
         fadeAudio(
             audio,
@@ -898,36 +1391,44 @@ function handleCardLeave(
     }
 
 
-    /* =====================================================
-       BACKGROUND MUSIC
-    ====================================================== */
+    /*
+        Fontos:
 
-    requestAnimationFrame(
+        Nem requestAnimationFrame-ben csináljuk,
+        hanem timeouttal.
+
+        Így ha azonnal egy másik kártyára húzol,
+        nem kezd el a háttér össze-vissza fade-elni.
+    */
+
+    setTimeout(
         () => {
 
-            /*
-                Another card may have been entered
-                between mouseleave and this frame.
-
-                If so, DON'T restore the background music.
-            */
             if (
                 !currentHoveredCard
             ) {
 
-                fadeAudio(
-                    backgroundMusic,
-                    BACKGROUND_VOLUME,
-                    BACKGROUND_FADE_DURATION
-                );
+                if (
+                    backgroundMusicEnabled
+                ) {
+
+                    fadeAudio(
+                        backgroundMusic,
+                        BACKGROUND_VOLUME,
+                        BACKGROUND_FADE_DURATION
+                    );
+
+                }
 
 
                 resetBackground();
 
             }
 
-        }
+        },
+        20
     );
+
 }
 
 
@@ -939,26 +1440,14 @@ function changeBackground(
     image
 ) {
 
-    if (!image) {
+    if (
+        !image
+    ) {
 
         image =
             DEFAULT_COVER;
 
     }
-
-
-    /*
-        Every background change gets a unique token.
-
-        If the user moves:
-
-        A -> B -> C
-
-        and A finishes loading after C,
-        A will NOT overwrite C.
-    */
-    const token =
-        ++backgroundChangeToken;
 
 
     const preload =
@@ -973,16 +1462,6 @@ function changeBackground(
         () => {
 
             if (
-                token !==
-                backgroundChangeToken
-            ) {
-
-                return;
-
-            }
-
-
-            if (
                 currentHoveredCard
             ) {
 
@@ -995,9 +1474,11 @@ function changeBackground(
 
 
     /*
-        Expanded-card background:
-        less blur than the default background.
+        Hover háttér:
+
+        EZT állíthatod, ha több / kevesebb blur kell.
     */
+
     background.style.filter =
         "blur(5px)";
 
@@ -1008,6 +1489,7 @@ function changeBackground(
 
     background.style.opacity =
         "0.52";
+
 }
 
 
@@ -1017,14 +1499,8 @@ function changeBackground(
 
 function resetBackground() {
 
-    /*
-        Invalidate old preloads.
-    */
-    backgroundChangeToken++;
-
-
     background.style.backgroundImage =
-        `url("${DEFAULT_BG}")`;
+        `url("${DEFAULT_BACKGROUND}")`;
 
 
     background.style.filter =
@@ -1037,6 +1513,7 @@ function resetBackground() {
 
     background.style.opacity =
         "0.42";
+
 }
 
 
@@ -1048,19 +1525,19 @@ function startAudioIfNeeded(
     audio
 ) {
 
-    if (!audio) {
+    if (
+        !audio
+    ) {
+
         return;
+
     }
 
 
     /*
-        Already playing?
-
-        DO NOT call play() again.
-
-        This prevents the song from restarting
-        every time the user hovers the card.
+        Ha már megy, NEM indítjuk újra.
     */
+
     if (
         !audio.paused
     ) {
@@ -1081,6 +1558,7 @@ function startAudioIfNeeded(
 
             }
         );
+
 }
 
 
@@ -1094,28 +1572,11 @@ function fadeAudio(
     duration = 600
 ) {
 
-    if (!audio) {
+    if (
+        !audio
+    ) {
+
         return;
-    }
-
-
-    /*
-        Cancel previous fade for this exact audio.
-
-        This is what fixes the stuttering / fighting
-        animations when the mouse moves quickly.
-    */
-    const previousAnimation =
-        audioFadeAnimations.get(
-            audio
-        );
-
-
-    if (previousAnimation) {
-
-        cancelAnimationFrame(
-            previousAnimation
-        );
 
     }
 
@@ -1137,12 +1598,6 @@ function fadeAudio(
         audio.volume =
             targetVolume;
 
-
-        audioFadeAnimations.delete(
-            audio
-        );
-
-
         return;
 
     }
@@ -1150,10 +1605,6 @@ function fadeAudio(
 
     const startTime =
         performance.now();
-
-
-    let animationId =
-        null;
 
 
     function animate(
@@ -1172,9 +1623,6 @@ function fadeAudio(
             );
 
 
-        /*
-            Smoothstep easing.
-        */
         const eased =
             progress *
             progress *
@@ -1191,43 +1639,182 @@ function fadeAudio(
             progress < 1
         ) {
 
-            animationId =
-                requestAnimationFrame(
-                    animate
-                );
-
-
-            audioFadeAnimations.set(
-                audio,
-                animationId
+            requestAnimationFrame(
+                animate
             );
-
 
         } else {
 
             audio.volume =
                 targetVolume;
 
-
-            audioFadeAnimations.delete(
-                audio
-            );
-
         }
 
     }
 
 
-    animationId =
-        requestAnimationFrame(
-            animate
+    requestAnimationFrame(
+        animate
+    );
+
+}
+
+
+/* =========================================================
+   MUSIC PLAYER
+========================================================= */
+
+musicPlayer.addEventListener(
+    "click",
+    async event => {
+
+        event.stopPropagation();
+
+
+        if (
+            !audioUnlocked
+        ) {
+
+            await unlockAudio();
+
+        }
+
+
+        if (
+            backgroundMusic.paused
+        ) {
+
+            startBackgroundMusic();
+
+        } else {
+
+            pauseBackgroundMusic();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   START BACKGROUND MUSIC
+========================================================= */
+
+async function startBackgroundMusic() {
+
+    try {
+
+        await backgroundMusic.play();
+
+
+        backgroundMusicEnabled =
+            true;
+
+
+        musicPlayer.classList.add(
+            "playing"
         );
 
 
-    audioFadeAnimations.set(
-        audio,
-        animationId
+        /*
+            A háttérzene normál hangerőre kerül.
+        */
+
+        fadeAudio(
+            backgroundMusic,
+            currentHoveredCard
+                ? BACKGROUND_HOVER_VOLUME
+                : BACKGROUND_VOLUME,
+            BACKGROUND_FADE_DURATION
+        );
+
+
+        /*
+            GIF:
+
+            play → pause állapot
+            visszafelé kell mennie.
+        */
+
+        animatePlayerForward();
+
+    } catch (error) {
+
+        console.error(
+            "Nem sikerült elindítani a háttérzenét:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   PAUSE BACKGROUND MUSIC
+========================================================= */
+
+function pauseBackgroundMusic() {
+
+    /*
+        Fade után pause.
+
+        Nem vágjuk el azonnal.
+    */
+
+    fadeAudio(
+        backgroundMusic,
+        0,
+        BACKGROUND_FADE_DURATION
     );
+
+
+    setTimeout(
+        () => {
+
+            /*
+                Csak akkor pause-oljuk,
+                ha közben nem indítottuk újra.
+            */
+
+            if (
+                backgroundMusic.paused
+            ) {
+
+                return;
+
+            }
+
+
+            backgroundMusic.pause();
+
+
+            backgroundMusic.volume =
+                BACKGROUND_VOLUME;
+
+        },
+        BACKGROUND_FADE_DURATION
+    );
+
+
+    backgroundMusicEnabled =
+        false;
+
+
+    musicPlayer.classList.remove(
+        "playing"
+    );
+
+
+    /*
+        GIF:
+
+        pause → play állapot.
+        Tehát előrefelé.
+    */
+
+    animatePlayerBackward();
+
 }
 
 
@@ -1235,15 +1822,7 @@ function fadeAudio(
    UNLOCK AUDIO
 ========================================================= */
 
-/*
-    Browsers block autoplay with sound.
-
-    GitHub Pages itself is NOT the problem.
-
-    The first real user interaction unlocks audio.
-*/
-
-function unlockAudio() {
+async function unlockAudio() {
 
     if (
         audioUnlocked
@@ -1258,83 +1837,35 @@ function unlockAudio() {
         true;
 
 
-    console.log(
-        "Audio unlocked."
-    );
+    /*
+        Candidate zenék elindítása.
 
-
-    /* =====================================================
-       BACKGROUND MUSIC
-    ====================================================== */
-
-    backgroundMusic.volume =
-        BACKGROUND_VOLUME;
-
-
-    backgroundMusic
-        .play()
-        .catch(
-            error => {
-
-                console.debug(
-                    "Background audio blocked:",
-                    error
-                );
-
-            }
-        );
-
-
-    /* =====================================================
-       CANDIDATE MUSIC
-    ====================================================== */
+        Innentől mindegyik folyamatosan megy,
+        csak hangerővel szabályozzuk őket.
+    */
 
     audios.forEach(
         audio => {
 
-            /*
-                Keep candidate songs silent until
-                their card is hovered.
-            */
             audio.volume =
                 NORMAL_VOLUME;
 
 
-            /*
-                Start them once.
-
-                From this point on, hover only changes
-                volume and NEVER restarts the song.
-            */
             audio.play()
                 .catch(
-                    error => {
-
-                        console.debug(
-                            "Candidate audio blocked:",
-                            error
-                        );
-
-                    }
+                    () => {}
                 );
 
         }
     );
+
 }
 
 
 /* =========================================================
-   FIRST REAL USER INTERACTION
+   FIRST USER INTERACTION
 ========================================================= */
 
-/*
-    IMPORTANT:
-
-    pointerdown and keydown count as actual user
-    interaction for browser autoplay policies.
-
-    We intentionally DO NOT use pointermove here.
-*/
 document.addEventListener(
     "pointerdown",
     unlockAudio,
@@ -1354,17 +1885,13 @@ document.addEventListener(
 
 
 /* =========================================================
-   MOUSE WHEEL -> HORIZONTAL SCROLL
+   MOUSE WHEEL → HORIZONTAL SCROLL
 ========================================================= */
 
 musicList.addEventListener(
     "wheel",
     event => {
 
-        /*
-            If the user is primarily scrolling vertically,
-            convert it to horizontal scrolling.
-        */
         if (
             Math.abs(event.deltaY)
             >
@@ -1387,7 +1914,14 @@ musicList.addEventListener(
 
 
 /* =========================================================
-   LOAD
+   INITIALIZE PLAYER
+========================================================= */
+
+loadPlayerGif();
+
+
+/* =========================================================
+   LOAD SONGS
 ========================================================= */
 
 loadSongs();
