@@ -1,0 +1,1430 @@
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+
+html,
+body {
+
+    width: 100%;
+    height: 100%;
+
+    margin: 0;
+    padding: 0;
+
+    overflow: hidden;
+}
+
+
+body {
+
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    color: white;
+
+    background:
+        #080808;
+
+    -webkit-font-smoothing:
+        antialiased;
+
+    text-rendering:
+        optimizeLegibility;
+}
+
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+
+:root {
+
+    --card-size:
+        220px;
+
+    /*
+        220 x 440 = 1:2
+    */
+    --card-expanded-width:
+        440px;
+
+    --radius:
+        34px;
+
+    --card-gap:
+        24px;
+
+    --accent:
+        #1ed760;
+
+    --background:
+        #080808;
+
+    --text-primary:
+        #ffffff;
+
+    --text-secondary:
+        rgba(255, 255, 255, 0.68);
+}
+
+
+/* =========================================================
+   BACKGROUND
+========================================================= */
+
+#background {
+
+    position:
+        fixed;
+
+    inset:
+        -100px;
+
+    z-index:
+        -3;
+
+    /*
+        FONTOS:
+        Ez már nem a default cover.
+        Ez a külön default-bg.png.
+    */
+    background-image:
+        url("musics/default-bg.png");
+
+    background-size:
+        cover;
+
+    background-position:
+        center;
+
+    background-repeat:
+        no-repeat;
+
+    filter:
+        blur(75px);
+
+    transform:
+        scale(1.12);
+
+    opacity:
+        0.42;
+
+    will-change:
+        background-image,
+        filter,
+        transform,
+        opacity;
+
+    transition:
+
+        background-image
+            0.2s ease,
+
+        filter
+            0.6s cubic-bezier(.2,.8,.2,1),
+
+        transform
+            0.8s cubic-bezier(.2,.8,.2,1),
+
+        opacity
+            0.4s ease;
+}
+
+
+/* =========================================================
+   BACKGROUND OVERLAY
+========================================================= */
+
+#background-overlay {
+
+    position:
+        fixed;
+
+    inset:
+        0;
+
+    z-index:
+        -2;
+
+    pointer-events:
+        none;
+
+    background:
+
+        linear-gradient(
+            180deg,
+
+            rgba(0, 0, 0, 0.42),
+
+            rgba(0, 0, 0, 0.70)
+        );
+}
+
+
+/* =========================================================
+   MAIN
+========================================================= */
+
+main {
+
+    width:
+        100%;
+
+    height:
+        100%;
+
+    position:
+        relative;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+}
+
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.hero {
+
+    flex-shrink:
+        0;
+
+    padding:
+        52px
+        60px
+        20px;
+}
+
+
+.hero-content {
+
+    max-width:
+        700px;
+}
+
+
+.eyebrow {
+
+    display:
+        block;
+
+    margin-bottom:
+        10px;
+
+    font-size:
+        12px;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        0.18em;
+
+    color:
+        rgba(255, 255, 255, 0.55);
+}
+
+
+.hero h1 {
+
+    margin:
+        0;
+
+    font-size:
+        clamp(
+            40px,
+            5vw,
+            72px
+        );
+
+    line-height:
+        0.95;
+
+    letter-spacing:
+        -0.055em;
+}
+
+
+.hero p {
+
+    margin:
+        16px
+        0
+        0;
+
+    font-size:
+        17px;
+
+    color:
+        var(--text-secondary);
+}
+
+
+/* =========================================================
+   MUSIC CONTAINER
+========================================================= */
+
+.music-container {
+
+    flex:
+        1;
+
+    min-height:
+        0;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    overflow:
+        hidden;
+
+    padding:
+        20px
+        0
+        70px;
+}
+
+
+/* =========================================================
+   MUSIC LIST
+========================================================= */
+
+#music-list {
+
+    width:
+        100%;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        var(--card-gap);
+
+    overflow-x:
+        auto;
+
+    overflow-y:
+        visible;
+
+    padding:
+        70px
+        60px;
+
+    scroll-behavior:
+        smooth;
+
+    scroll-snap-type:
+        x proximity;
+
+    scrollbar-width:
+        none;
+}
+
+
+#music-list::-webkit-scrollbar {
+
+    display:
+        none;
+}
+
+
+/* =========================================================
+   MUSIC CARD
+========================================================= */
+
+.music-card {
+
+    position:
+        relative;
+
+    flex-shrink:
+        0;
+
+    width:
+        var(--card-size);
+
+    height:
+        var(--card-size);
+
+    overflow:
+        hidden;
+
+    border-radius:
+        var(--radius);
+
+    scroll-snap-align:
+        center;
+
+    cursor:
+        pointer;
+
+    isolation:
+        isolate;
+
+    background-color:
+        rgba(255, 255, 255, 0.08);
+
+    background-image:
+        var(--cover);
+
+    background-size:
+        cover;
+
+    background-position:
+        center;
+
+    background-repeat:
+        no-repeat;
+
+    box-shadow:
+        0 18px 50px
+        rgba(0, 0, 0, 0.30);
+
+    will-change:
+        width,
+        transform;
+
+    transition:
+
+        width
+            0.5s cubic-bezier(.2,.8,.2,1),
+
+        transform
+            0.45s cubic-bezier(.2,.8,.2,1),
+
+        box-shadow
+            0.45s ease;
+}
+
+
+/* =========================================================
+   CARD HOVER
+========================================================= */
+
+.music-card:hover {
+
+    width:
+        var(--card-expanded-width);
+
+    transform:
+        translateY(-12px)
+        scale(1.02);
+
+    box-shadow:
+        0 35px 100px
+        rgba(0, 0, 0, 0.58);
+}
+
+
+/* =========================================================
+   COVER
+========================================================= */
+
+.cover {
+
+    position:
+        absolute;
+
+    inset:
+        0;
+
+    width:
+        100%;
+
+    height:
+        100%;
+
+    object-fit:
+        cover;
+
+    border-radius:
+        inherit;
+
+    z-index:
+        0;
+
+    opacity:
+        1;
+
+    transform:
+        scale(1);
+
+    filter:
+        blur(0);
+
+    transition:
+
+        opacity
+            0.55s cubic-bezier(.2,.8,.2,1),
+
+        transform
+            1s cubic-bezier(.2,.8,.2,1),
+
+        filter
+            0.8s ease;
+}
+
+
+/* =========================================================
+   HOVER COVER
+========================================================= */
+
+.music-card:hover .cover {
+
+    opacity:
+        0;
+
+    transform:
+        scale(1.08);
+
+    filter:
+        blur(12px);
+}
+
+
+/* =========================================================
+   CARD BACKGROUND BLUR
+========================================================= */
+
+.music-card::before {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    inset:
+        -30px;
+
+    z-index:
+        1;
+
+    pointer-events:
+        none;
+
+    background:
+        inherit;
+
+    background-size:
+        cover;
+
+    background-position:
+        center;
+
+    opacity:
+        0;
+
+    filter:
+        blur(0);
+
+    transform:
+        scale(1.05);
+
+    transition:
+
+        opacity
+            0.6s ease,
+
+        filter
+            0.8s cubic-bezier(.2,.8,.2,1),
+
+        transform
+            1s cubic-bezier(.2,.8,.2,1);
+}
+
+
+.music-card:hover::before {
+
+    opacity:
+        1;
+
+    filter:
+        blur(8px);
+
+    transform:
+        scale(1.08);
+}
+
+
+/* =========================================================
+   CARD GRADIENT
+========================================================= */
+
+.music-card::after {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    inset:
+        0;
+
+    z-index:
+        2;
+
+    pointer-events:
+        none;
+
+    opacity:
+        0;
+
+    background:
+
+        linear-gradient(
+            180deg,
+
+            rgba(0, 0, 0, 0.08) 0%,
+
+            rgba(0, 0, 0, 0.15) 30%,
+
+            rgba(0, 0, 0, 0.58) 65%,
+
+            rgba(0, 0, 0, 0.93) 100%
+        );
+
+    transition:
+        opacity
+        0.45s ease;
+}
+
+
+.music-card:hover::after {
+
+    opacity:
+        1;
+}
+
+
+/* =========================================================
+   VOTED PILL
+========================================================= */
+
+.voted-pill {
+
+    position:
+        absolute;
+
+    top:
+        14px;
+
+    right:
+        14px;
+
+    z-index:
+        5;
+
+    height:
+        32px;
+
+    padding:
+        0
+        11px
+        0
+        7px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        7px;
+
+    border-radius:
+        999px;
+
+    background:
+        rgba(255, 255, 255, 0.88);
+
+    color:
+        #000;
+
+    font-size:
+        11px;
+
+    font-weight:
+        750;
+
+    backdrop-filter:
+        blur(18px);
+
+    -webkit-backdrop-filter:
+        blur(18px);
+
+    box-shadow:
+        0 6px 20px
+        rgba(0, 0, 0, 0.22);
+
+    pointer-events:
+        none;
+
+    opacity:
+        0;
+
+    transform:
+        translateY(-5px)
+        scale(0.94);
+
+    transition:
+
+        opacity
+            0.3s ease,
+
+        transform
+            0.35s cubic-bezier(.2,.8,.2,1);
+}
+
+
+/* =========================================================
+   VOTED ICON
+========================================================= */
+
+.voted-pill img {
+
+    width:
+        20px;
+
+    height:
+        20px;
+
+    object-fit:
+        contain;
+
+    flex-shrink:
+        0;
+}
+
+
+/* =========================================================
+   SHOW VOTED PILL
+========================================================= */
+
+.music-card.has-vote .voted-pill {
+
+    opacity:
+        1;
+
+    transform:
+        translateY(0)
+        scale(1);
+}
+
+
+/* =========================================================
+   HIDE PILL WHILE OPEN
+========================================================= */
+
+.music-card:hover .voted-pill {
+
+    opacity:
+        0;
+
+    transform:
+        translateY(-5px)
+        scale(0.94);
+}
+
+
+/* =========================================================
+   INFO
+========================================================= */
+
+.info {
+
+    position:
+        absolute;
+
+    inset:
+        0;
+
+    z-index:
+        3;
+
+    padding:
+        28px;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    justify-content:
+        flex-end;
+
+    opacity:
+        0;
+
+    transform:
+        translateY(20px);
+
+    pointer-events:
+        none;
+
+    transition:
+
+        opacity
+            0.35s ease 0.08s,
+
+        transform
+            0.5s cubic-bezier(.2,.8,.2,1)
+            0.08s;
+}
+
+
+.music-card:hover .info {
+
+    opacity:
+        1;
+
+    transform:
+        translateY(0);
+
+    pointer-events:
+        auto;
+}
+
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+.info h2 {
+
+    max-width:
+        100%;
+
+    margin:
+        0
+        0
+        5px;
+
+    padding-right:
+        55px;
+
+    font-size:
+        21px;
+
+    line-height:
+        1.12;
+
+    font-weight:
+        750;
+
+    letter-spacing:
+        -0.025em;
+
+    overflow:
+        hidden;
+
+    text-overflow:
+        ellipsis;
+
+    display:
+        -webkit-box;
+
+    -webkit-line-clamp:
+        2;
+
+    -webkit-box-orient:
+        vertical;
+}
+
+
+/* =========================================================
+   ARTIST
+========================================================= */
+
+.info > p {
+
+    max-width:
+        100%;
+
+    margin:
+        0;
+
+    padding-right:
+        55px;
+
+    font-size:
+        14px;
+
+    line-height:
+        1.3;
+
+    color:
+        rgba(255, 255, 255, 0.72);
+
+    overflow:
+        hidden;
+
+    text-overflow:
+        ellipsis;
+
+    white-space:
+        nowrap;
+}
+
+
+/* =========================================================
+   DESCRIPTION
+========================================================= */
+
+.description {
+
+    margin:
+        12px
+        0
+        0;
+
+    max-width:
+        100%;
+
+    font-size:
+        12px;
+
+    line-height:
+        1.45;
+
+    color:
+        rgba(255, 255, 255, 0.62);
+
+    overflow:
+        hidden;
+
+    display:
+        -webkit-box;
+
+    -webkit-line-clamp:
+        3;
+
+    -webkit-box-orient:
+        vertical;
+}
+
+
+/* =========================================================
+   META
+========================================================= */
+
+.info-meta {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    flex-wrap:
+        wrap;
+
+    gap:
+        6px;
+
+    margin-top:
+        12px;
+}
+
+
+.info-meta span {
+
+    padding:
+        5px
+        9px;
+
+    border-radius:
+        999px;
+
+    font-size:
+        11px;
+
+    color:
+        rgba(255, 255, 255, 0.70);
+
+    background:
+        rgba(255, 255, 255, 0.12);
+
+    backdrop-filter:
+        blur(12px);
+}
+
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.card-actions {
+
+    width:
+        100%;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        8px;
+
+    margin-top:
+        15px;
+}
+
+
+/* =========================================================
+   SPOTIFY BUTTON
+========================================================= */
+
+.spotify-button {
+
+    flex:
+        1;
+
+    min-width:
+        0;
+
+    height:
+        40px;
+
+    padding:
+        0
+        14px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border:
+        none;
+
+    border-radius:
+        999px;
+
+    background:
+        var(--accent);
+
+    color:
+        #000;
+
+    text-decoration:
+        none;
+
+    font-size:
+        12px;
+
+    font-weight:
+        750;
+
+    white-space:
+        nowrap;
+
+    overflow:
+        hidden;
+
+    text-overflow:
+        ellipsis;
+
+    transition:
+
+        transform
+            0.2s ease,
+
+        filter
+            0.2s ease,
+
+        box-shadow
+            0.2s ease;
+}
+
+
+.spotify-button:hover {
+
+    transform:
+        scale(1.025);
+
+    filter:
+        brightness(1.08);
+
+    box-shadow:
+        0 8px 28px
+        rgba(30, 215, 96, 0.25);
+}
+
+
+.spotify-button:active {
+
+    transform:
+        scale(0.97);
+}
+
+
+/* =========================================================
+   VOTE BUTTON
+========================================================= */
+
+.vote-button {
+
+    flex:
+        0 0 92px;
+
+    height:
+        40px;
+
+    padding:
+        0
+        18px;
+
+    border:
+        none;
+
+    border-radius:
+        999px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    background:
+        rgba(255, 255, 255, 0.14);
+
+    color:
+        white;
+
+    font-family:
+        inherit;
+
+    font-size:
+        12px;
+
+    font-weight:
+        750;
+
+    cursor:
+        pointer;
+
+    backdrop-filter:
+        blur(15px);
+
+    -webkit-backdrop-filter:
+        blur(15px);
+
+    transition:
+
+        transform
+            0.2s ease,
+
+        background
+            0.2s ease,
+
+        color
+            0.2s ease;
+}
+
+
+.vote-button:hover {
+
+    transform:
+        scale(1.04);
+
+    background:
+        rgba(255, 255, 255, 0.24);
+}
+
+
+.vote-button:active {
+
+    transform:
+        scale(0.96);
+}
+
+
+/* =========================================================
+   VOTED BUTTON
+========================================================= */
+
+.vote-button.voted {
+
+    background:
+        rgba(255, 255, 255, 0.92);
+
+    color:
+        #000;
+}
+
+
+.vote-button.voted:hover {
+
+    background:
+        #ffffff;
+}
+
+
+/* =========================================================
+   PLAYING STATE
+========================================================= */
+
+.music-card.is-playing {
+
+    box-shadow:
+        0 25px 80px
+        rgba(0, 0, 0, 0.45);
+}
+
+
+/* =========================================================
+   SCROLL HINT
+========================================================= */
+
+.scroll-hint {
+
+    position:
+        absolute;
+
+    right:
+        60px;
+
+    bottom:
+        30px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        10px;
+
+    font-size:
+        12px;
+
+    color:
+        rgba(255, 255, 255, 0.45);
+
+    pointer-events:
+        none;
+}
+
+
+.scroll-arrow {
+
+    font-size:
+        18px;
+
+    animation:
+        scrollArrow
+        1.5s ease-in-out infinite;
+}
+
+
+@keyframes scrollArrow {
+
+    0%,
+    100% {
+
+        transform:
+            translateX(0);
+    }
+
+    50% {
+
+        transform:
+            translateX(7px);
+    }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+    :root {
+
+        --card-size:
+            180px;
+
+        --card-expanded-width:
+            360px;
+
+        --radius:
+            28px;
+
+        --card-gap:
+            16px;
+    }
+
+
+    .hero {
+
+        padding:
+            30px
+            30px
+            10px;
+    }
+
+
+    .hero h1 {
+
+        font-size:
+            38px;
+    }
+
+
+    .hero p {
+
+        font-size:
+            14px;
+    }
+
+
+    #music-list {
+
+        padding:
+            45px
+            30px;
+    }
+
+
+    .music-container {
+
+        padding-bottom:
+            50px;
+    }
+
+
+    .info {
+
+        padding:
+            20px;
+    }
+
+
+    .info h2 {
+
+        font-size:
+            17px;
+    }
+
+
+    .info > p {
+
+        font-size:
+            13px;
+    }
+
+
+    .description {
+
+        font-size:
+            11px;
+    }
+
+
+    .card-actions {
+
+        gap:
+            6px;
+    }
+
+
+    .spotify-button {
+
+        height:
+            36px;
+
+        font-size:
+            11px;
+
+        padding:
+            0
+            10px;
+    }
+
+
+    .vote-button {
+
+        flex-basis:
+            80px;
+
+        height:
+            36px;
+
+        font-size:
+            11px;
+    }
+
+
+    .voted-pill {
+
+        top:
+            10px;
+
+        right:
+            10px;
+
+        height:
+            29px;
+
+        font-size:
+            10px;
+    }
+
+
+    .voted-pill img {
+
+        width:
+            18px;
+
+        height:
+            18px;
+    }
+
+
+    .scroll-hint {
+
+        right:
+            30px;
+
+        bottom:
+            20px;
+    }
+
+}

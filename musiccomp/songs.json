@@ -1,0 +1,28 @@
+[
+    {
+        "title": "Post Reference",
+        "artist": "Evade OST",
+        "cover": "musics/covers/postreference.jpg",
+        "preview": "musics/previews/postreference.mp3",
+        "spotify": "https://open.spotify.com/track/0VjIjW4GlUZAMYd2vXMi3b",
+        "votes": 67
+    },
+
+    {
+        "title": "After Dark",
+        "artist": "Mr.Kitty",
+        "cover": "musics/covers/after_dark.jpg",
+        "preview": "musics/previews/after_dark.mp3",
+        "spotify": "https://open.spotify.com/track/2g7gviEeJr6pyxO7G35EWQ",
+        "votes": 0
+    },
+
+    {
+        "title": "Resonance",
+        "artist": "HOME",
+        "cover": "musics/covers/resonance.jpg",
+        "preview": "musics/previews/resonance.mp3",
+        "spotify": "https://open.spotify.com/track/4E6cwWJWZw2zWf7VFbH7wf",
+        "votes": 0
+    }
+]
