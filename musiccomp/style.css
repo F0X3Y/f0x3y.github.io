@@ -155,7 +155,7 @@ body {
     from {
 
         transform:
-            scale(1.12)
+            scale(1.5)
             rotate(0deg);
 
     }
@@ -163,7 +163,7 @@ body {
     to {
 
         transform:
-            scale(1.12)
+            scale(1.5)
             rotate(360deg);
 
     }
@@ -1793,4 +1793,150 @@ main {
         bottom:
             20px;
     }
+}
+
+/* =========================================================
+   LOADING SCREEN
+========================================================= */
+
+#loader {
+
+    position:
+        fixed;
+
+    inset:
+        0;
+
+    z-index:
+        9999;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    background:
+        #080808;
+
+    opacity:
+        1;
+
+    visibility:
+        visible;
+
+    transition:
+
+        opacity
+            0.6s ease,
+
+        visibility
+            0.6s ease;
+}
+
+
+/* =========================================================
+   LOADER HIDDEN
+========================================================= */
+
+#loader.loaded {
+
+    opacity:
+        0;
+
+    visibility:
+        hidden;
+
+    pointer-events:
+        none;
+}
+
+
+/* =========================================================
+   LOADER CONTENT
+========================================================= */
+
+.loader-content {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    align-items:
+        center;
+
+    gap:
+        18px;
+}
+
+
+/* =========================================================
+   LOADER SPINNER
+========================================================= */
+
+.loader-spinner {
+
+    width:
+        32px;
+
+    height:
+        32px;
+
+    border-radius:
+        50%;
+
+    border:
+        3px solid
+        rgba(255, 255, 255, 0.12);
+
+    border-top-color:
+        rgba(255, 255, 255, 0.85);
+
+    animation:
+
+        loaderSpin
+        0.8s
+        linear
+        infinite;
+}
+
+
+/* =========================================================
+   LOADER TEXT
+========================================================= */
+
+.loader-text {
+
+    font-size:
+        12px;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        0.15em;
+
+    color:
+        rgba(255, 255, 255, 0.55);
+}
+
+
+/* =========================================================
+   LOADER ANIMATION
+========================================================= */
+
+@keyframes loaderSpin {
+
+    to {
+
+        transform:
+            rotate(360deg);
+
+    }
+
 }

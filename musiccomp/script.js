@@ -17,6 +17,9 @@ const musicPlayer =
 const playerGif =
     document.getElementById("player-gif");
 
+const loader =
+    document.getElementById("loader");
+
 
 /* =========================================================
    SETTINGS
@@ -32,91 +35,41 @@ const VOTED_ICON =
     "musics/voted.png";
 
 
-/*
-    Player images
-*/
-
-const PLAYER_PLAY_IMAGE =
-    "musics/play.jpg";
-
-const PLAYER_PAUSE_IMAGE =
-    "musics/pause.jpg";
-
-
-/*
-    Player animations
-*/
-
-const PLAYER_PLAY_ANIMATION =
-    "musics/play-pause.gif";
-
-const PLAYER_PAUSE_ANIMATION =
-    "musics/pause-play.gif";
-
-
-/*
-    A GIF animációk hossza.
-
-    1000 = 1 másodperc
-
-    Ha a GIF-jeid más hosszúságúak,
-    ezeket az értékeket módosítsd.
-*/
-
-const PLAY_ANIMATION_DURATION =
-    1170/2;
-
-const PAUSE_ANIMATION_DURATION =
-    1170/2;
-
-
-/*
-    Ha nincs hoverelt kártya:
-*/
-
 const NORMAL_VOLUME =
     0.0;
 
-
-/*
-    Hoverelt kártya hangereje.
-*/
 
 const HOVER_VOLUME =
     0.75;
 
 
-/*
-    Háttérzene hangereje.
-*/
-
 const BACKGROUND_VOLUME =
     0.15;
 
-
-/*
-    Hoverkor mennyi idő alatt halkuljon
-    a háttérzene.
-*/
 
 const BACKGROUND_FADE_OUT =
     650;
 
 
-/*
-    Amikor elhagyjuk a kártyát.
-*/
-
 const BACKGROUND_FADE_IN =
     900;
 
 
-/*
-    Kártya zene fade.
-*/
-
 const AUDIO_FADE_DURATION =
     650;
+
+
+/*
+    GIF-ek hossza:
+
+    1170 / 2 = 585 ms
+*/
+
+const PLAY_ANIMATION_DURATION =
+    585;
+
+const PAUSE_ANIMATION_DURATION =
+    585;
 
 
 /* =========================================================
@@ -145,25 +98,137 @@ const audios =
 
 /*
     Fade animationek tárolása.
-
-    Ez fontos ahhoz, hogy ne akadjon,
-    amikor egyik kártyáról rögtön a másikra
-    megyünk.
 */
 
 const fadeAnimations =
     new WeakMap();
 
 
-/*
-    Player GIF timeout.
+/* =========================================================
+   ASSET PRELOADING
+========================================================= */
 
-    Gyors kattintgatásnál töröljük
-    az előző animáció timeoutját.
-*/
+function preloadImage(src) {
 
-let playerAnimationTimeout =
-    null;
+    return new Promise(
+        resolve => {
+
+            const image =
+                new Image();
+
+
+            image.onload =
+                resolve;
+
+
+            image.onerror =
+                resolve;
+
+
+            image.src =
+                src;
+
+        }
+    );
+
+}
+
+
+async function preloadAssets() {
+
+    const assets = [];
+
+
+    /* =====================================================
+       STATIC ASSETS
+    ====================================================== */
+
+    assets.push(
+
+        DEFAULT_COVER,
+
+        DEFAULT_BACKGROUND,
+
+        VOTED_ICON,
+
+        "musics/play.jpg",
+
+        "musics/pause.jpg",
+
+        "musics/play-pause.gif",
+
+        "musics/pause-play.gif"
+
+    );
+
+
+    /* =====================================================
+       SONG COVERS
+    ====================================================== */
+
+    songs.forEach(
+        song => {
+
+            if (song.cover) {
+
+                assets.push(
+                    song.cover
+                );
+
+            }
+
+        }
+    );
+
+
+    /*
+        Duplikációk kiszűrése.
+    */
+
+    const uniqueAssets =
+        [
+            ...new Set(
+                assets
+            )
+        ];
+
+
+    console.log(
+        `Preloading ${uniqueAssets.length} assets...`
+    );
+
+
+    /* =====================================================
+       LOAD ALL
+    ====================================================== */
+
+    await Promise.all(
+
+        uniqueAssets.map(
+            preloadImage
+        )
+
+    );
+
+
+    console.log(
+        "All image assets loaded."
+    );
+
+}
+
+
+/* =========================================================
+   HIDE LOADER
+========================================================= */
+
+function hideLoader() {
+
+    loader.classList.add(
+        "loaded"
+    );
+
+}
 
 
 /* =========================================================
@@ -175,7 +240,9 @@ async function loadSongs() {
     try {
 
         const response =
-            await fetch("songs.json");
+            await fetch(
+                "songs.json"
+            );
 
 
         if (!response.ok) {
@@ -200,6 +267,18 @@ async function loadSongs() {
         }
 
 
+        /*
+            Először minden assetet betöltünk.
+        */
+
+        await preloadAssets();
+
+
+        /*
+            Csak ezután építjük fel
+            a cardokat.
+        */
+
         songs.forEach(
             createCard
         );
@@ -210,12 +289,38 @@ async function loadSongs() {
         );
 
 
+        /*
+            Rövid frame-halasztás,
+            hogy a cardok ténylegesen
+            bekerüljenek a DOM-ba.
+        */
+
+        requestAnimationFrame(
+            () => {
+
+                requestAnimationFrame(
+                    hideLoader
+                );
+
+            }
+        );
+
+
     } catch (error) {
 
         console.error(
             "Nem sikerült betölteni a songs.json fájlt:",
             error
         );
+
+
+        /*
+            Ha valami elromlik,
+            akkor se maradjon örökre
+            a loading screen.
+        */
+
+        hideLoader();
 
     }
 
@@ -588,13 +693,6 @@ function createCard(
         0;
 
 
-    /*
-        Vote kulcs.
-
-        Spotify URL alapján tároljuk,
-        ha van.
-    */
-
     const voteKey =
         `musiccomp-vote-${
             song.spotify ||
@@ -817,13 +915,6 @@ function handleCardEnter(
     audio
 ) {
 
-    /*
-        Ez azonnal beállítódik.
-
-        Ha egyből másik kártyára húzzuk
-        az egeret, nincs köztes null állapot.
-    */
-
     currentHoveredCard =
         card;
 
@@ -876,16 +967,6 @@ function handleCardEnter(
             "is-playing"
         );
 
-
-        /*
-            A háttér elkezd forogni,
-            amikor candidate zene szól.
-        */
-
-        setBackgroundSpinning(
-            true
-        );
-
     }
 
 }
@@ -900,7 +981,9 @@ function handleCardLeave(
     audio
 ) {
 
-    if (audio) {
+    if (
+        audio
+    ) {
 
         fadeAudio(
             audio,
@@ -916,13 +999,6 @@ function handleCardLeave(
     }
 
 
-    /*
-        Nem állítjuk null-ra azonnal.
-
-        Ha rögtön másik kártyára húzunk,
-        az enter már beállította az újat.
-    */
-
     requestAnimationFrame(
         () => {
 
@@ -933,28 +1009,6 @@ function handleCardLeave(
                 currentHoveredCard =
                     null;
 
-
-                /*
-                    Nincs több hoverelt candidate,
-                    ezért csak akkor állítsuk le a spint,
-                    ha a background music sem szól.
-                */
-
-                if (
-                    !backgroundMusicEnabled
-                ) {
-
-                    setBackgroundSpinning(
-                        false
-                    );
-
-                }
-
-
-                /*
-                    Csak akkor hozzuk vissza a
-                    háttérzenét, ha a player be van kapcsolva.
-                */
 
                 if (
                     backgroundMusicEnabled
@@ -1006,11 +1060,6 @@ function changeBackground(
     preload.onload =
         () => {
 
-            /*
-                Csak akkor cseréljük le,
-                ha még mindig van hover.
-            */
-
             if (
                 currentHoveredCard
             ) {
@@ -1027,25 +1076,8 @@ function changeBackground(
         "blur(5px)";
 
 
-    /*
-        FONTOS:
-
-        Itt nem állítunk rotate()-ot,
-        mert a spin CSS animation kezeli.
-
-        Csak a scale marad.
-    */
-
-    if (
-        !background.classList.contains(
-            "is-spinning"
-        )
-    ) {
-
-        background.style.transform =
-            "scale(1.06)";
-
-    }
+    background.style.transform =
+        "scale(1.06)";
 
 
     background.style.opacity =
@@ -1068,63 +1100,12 @@ function resetBackground() {
         "blur(75px)";
 
 
-    /*
-        Ha nem forog, normál scale.
-
-        Ha éppen forog, a CSS animation
-        továbbra is kezeli a transformot.
-    */
-
-    if (
-        !background.classList.contains(
-            "is-spinning"
-        )
-    ) {
-
-        background.style.transform =
-            "scale(1.12)";
-
-    }
+    background.style.transform =
+        "scale(1.12)";
 
 
     background.style.opacity =
         "0.42";
-
-}
-
-
-/* =========================================================
-   BACKGROUND SPIN
-========================================================= */
-
-function setBackgroundSpinning(
-    spinning
-) {
-
-    if (
-        spinning
-    ) {
-
-        background.classList.add(
-            "is-spinning"
-        );
-
-    } else {
-
-        background.classList.remove(
-            "is-spinning"
-        );
-
-
-        /*
-            Visszaállítjuk az alap transformot,
-            amikor megszűnik a spin.
-        */
-
-        background.style.transform =
-            "scale(1.12)";
-
-    }
 
 }
 
@@ -1143,11 +1124,6 @@ function startAudioIfNeeded(
 
     }
 
-
-    /*
-        Ha már játszik,
-        SOHA nem indítjuk újra.
-    */
 
     if (
         !audio.paused
@@ -1189,11 +1165,6 @@ function fadeAudio(
 
     }
 
-
-    /*
-        Ha ennek az audiónak már van futó fade-je,
-        leállítjuk.
-    */
 
     const previousAnimation =
         fadeAnimations.get(
@@ -1258,10 +1229,6 @@ function fadeAudio(
             );
 
 
-        /*
-            Smoothstep easing.
-        */
-
         const eased =
             progress *
             progress *
@@ -1323,116 +1290,66 @@ function fadeAudio(
    PLAYER GIF
 ========================================================= */
 
-/*
-    A player vizuális állapotát kezeli.
-
-    PLAY:
-
-        play-pause.gif
-                ↓
-             play.jpg
-
-
-    PAUSE:
-
-        pause-play.gif
-                ↓
-             pause.jpg
-*/
-
-
 function setPlayerGif(
     playing
 ) {
-
-    /*
-        Ha van előző animáció timeout,
-        töröljük.
-    */
-
-    if (
-        playerAnimationTimeout
-    ) {
-
-        clearTimeout(
-            playerAnimationTimeout
-        );
-
-
-        playerAnimationTimeout =
-            null;
-
-    }
-
-
-    /* =====================================================
-       PLAY
-    ====================================================== */
 
     if (
         playing
     ) {
 
-        /*
-            Play → Pause GIF
-        */
-
         playerGif.src =
-            PLAYER_PLAY_ANIMATION;
+            "musics/play-pause.gif";
 
 
-        /*
-            GIF után Play állókép.
-        */
+        setTimeout(
+            () => {
 
-        playerAnimationTimeout =
-            setTimeout(
-                () => {
+                /*
+                    Csak akkor váltunk pause.jpg-re,
+                    ha még mindig játszik a zene.
+                */
+
+                if (
+                    backgroundMusicEnabled
+                ) {
 
                     playerGif.src =
-                        PLAYER_PLAY_IMAGE;
+                        "musics/pause.jpg";
 
+                }
 
-                    playerAnimationTimeout =
-                        null;
+            },
+            PLAY_ANIMATION_DURATION
+        );
 
-                },
-                PLAY_ANIMATION_DURATION
-            );
-
-
-    /* =====================================================
-       PAUSE
-    ====================================================== */
 
     } else {
 
-        /*
-            Pause → Play GIF
-        */
-
         playerGif.src =
-            PLAYER_PAUSE_ANIMATION;
+            "musics/pause-play.gif";
 
 
-        /*
-            GIF után Pause állókép.
-        */
+        setTimeout(
+            () => {
 
-        playerAnimationTimeout =
-            setTimeout(
-                () => {
+                /*
+                    Csak akkor váltunk play.jpg-re,
+                    ha még mindig ki van kapcsolva.
+                */
+
+                if (
+                    !backgroundMusicEnabled
+                ) {
 
                     playerGif.src =
-                        PLAYER_PAUSE_IMAGE;
+                        "musics/play.jpg";
 
+                }
 
-                    playerAnimationTimeout =
-                        null;
-
-                },
-                PAUSE_ANIMATION_DURATION
-            );
+            },
+            PAUSE_ANIMATION_DURATION
+        );
 
     }
 
@@ -1446,11 +1363,6 @@ function setPlayerGif(
 musicPlayer.addEventListener(
     "click",
     async () => {
-
-        /*
-            Első interaction,
-            ezért innentől engedélyezhetjük az audiót.
-        */
 
         audioUnlocked =
             true;
@@ -1486,27 +1398,6 @@ musicPlayer.addEventListener(
             );
 
 
-            /*
-                Háttér spin leállítása,
-                ha nincs candidate zene sem.
-            */
-
-            if (
-                !currentHoveredCard
-            ) {
-
-                setBackgroundSpinning(
-                    false
-                );
-
-            }
-
-
-            /*
-                Pause → Play GIF
-                majd pause.jpg
-            */
-
             setPlayerGif(
                 false
             );
@@ -1527,11 +1418,6 @@ musicPlayer.addEventListener(
 
         try {
 
-            /*
-                Ha nincs hover,
-                indulhat a háttérzene.
-            */
-
             if (
                 !currentHoveredCard
             ) {
@@ -1549,16 +1435,6 @@ musicPlayer.addEventListener(
                     900
                 );
 
-
-                /*
-                    A háttérzene szól,
-                    ezért indulhat a spin.
-                */
-
-                setBackgroundSpinning(
-                    true
-                );
-
             }
 
         } catch (error) {
@@ -1571,31 +1447,6 @@ musicPlayer.addEventListener(
 
             backgroundMusicEnabled =
                 false;
-
-
-            musicPlayer.classList.remove(
-                "playing"
-            );
-
-
-            musicPlayer.setAttribute(
-                "aria-label",
-                "Play background music"
-            );
-
-
-            setBackgroundSpinning(
-                false
-            );
-
-
-            /*
-                Sikertelen lejátszásnál
-                rögtön a statikus pause kép.
-            */
-
-            playerGif.src =
-                PLAYER_PAUSE_IMAGE;
 
 
             return;
@@ -1614,30 +1465,6 @@ musicPlayer.addEventListener(
         );
 
 
-        /*
-            Ha hoverelt candidate van,
-            annak a zenéje szól.
-
-            Ilyenkor a spin már a handleCardEnter()
-            miatt fut.
-        */
-
-        if (
-            currentHoveredCard
-        ) {
-
-            setBackgroundSpinning(
-                true
-            );
-
-        }
-
-
-        /*
-            Play → Pause GIF
-            majd play.jpg
-        */
-
         setPlayerGif(
             true
         );
@@ -1649,13 +1476,6 @@ musicPlayer.addEventListener(
 /* =========================================================
    FIRST USER INTERACTION
 ========================================================= */
-
-/*
-    Nem indítjuk el itt a zenét.
-
-    Az interaction csak az audio autoplay lockot
-    oldja fel.
-*/
 
 function unlockAudio() {
 
@@ -1673,12 +1493,6 @@ function unlockAudio() {
 
 }
 
-
-/*
-    Nem a pointermove-ot használjuk,
-    mert azzal a user még nem akarja
-    feltétlenül elindítani a zenét.
-*/
 
 document.addEventListener(
     "pointerdown",
@@ -1734,25 +1548,19 @@ musicList.addEventListener(
 backgroundMusic.volume =
     0;
 
-
 backgroundMusicEnabled =
     false;
 
 
 /*
-    Oldalbetöltéskor ne induljon el
-    a pause-play GIF.
-
-    Rögtön a statikus pause.jpg látszódjon.
+    Alapból a pause-play GIF indul,
+    majd 585 ms után play.jpg lesz.
 */
 
-playerGif.src =
-    PLAYER_PAUSE_IMAGE;
+setPlayerGif(
+    false
+);
 
-
-/*
-    Alap háttér.
-*/
 
 resetBackground();
 
