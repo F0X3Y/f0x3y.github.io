@@ -42,6 +42,10 @@
 
     <main>
 
+        <!-- =================================================
+             HERO
+        ================================================== -->
+
         <header class="hero">
 
             <div class="hero-content">
@@ -105,18 +109,18 @@
 
     <button
         id="music-player"
+        class="music-player"
         type="button"
         aria-label="Play background music"
     >
 
-        <div
-            id="player-icon"
-            class="player-icon"
-        >
+        <div class="player-icon">
 
-            <canvas
-                id="player-canvas"
-            ></canvas>
+            <img
+                id="player-gif"
+                src="musics/pause.jpg"
+                alt=""
+            >
 
         </div>
 
@@ -131,6 +135,7 @@
             <span></span>
             <span></span>
             <span></span>
+            <span></span>
 
         </div>
 
@@ -138,7 +143,7 @@
 
 
     <!-- =====================================================
-         DEFAULT BACKGROUND MUSIC
+         BACKGROUND MUSIC
     ====================================================== -->
 
     <audio
