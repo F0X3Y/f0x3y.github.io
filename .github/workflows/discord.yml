@@ -72,10 +72,13 @@ jobs:
           )
 
           jq -n \
-          --arg content "$MESSAGE" \
-          '{content: $content}' \
+            --arg content "$MESSAGE" \
+            '{
+              content: $content,
+              flags: 4
+            }' \
           | curl \
-          -H "Content-Type: application/json" \
-          -X POST \
-          -d @- \
-          ${{ secrets.DISCORD_WEBHOOK }}
+            -H "Content-Type: application/json" \
+            -X POST \
+            -d @- \
+            ${{ secrets.DISCORD_WEBHOOK }}
