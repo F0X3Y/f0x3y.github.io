@@ -39,6 +39,15 @@ jobs:
               *.py)
                 ICON="<:py:1534604486046253127>"
                 ;;
+              *.png|*.jpg|*.jpeg|*.gif|*.webp|*.svg)
+                ICON="<:img:1536685954247565342>"
+                ;;
+              *.mp3|*.wav|*.ogg|*.flac|*.m4a)
+                ICON="<:audio:1536686006181306379>"
+                ;;
+              *.txt|*.md)
+                ICON="<:txt:1536686079288021103>"
+                ;;
               *)
                 ICON="<:file:1534603227453063168>"
                 ;;
@@ -66,7 +75,7 @@ jobs:
 
           🔗 Weblap: [f0x3y.github.io](https://f0x3y.github.io)
 
-          📂 Módosított fájlok:
+          <:folder:1536686130164932638> Módosított fájlok:
           ${{ steps.changed.outputs.files }}
           EOF
           )
