@@ -134,6 +134,43 @@ body {
 }
 
 
+
+/* =========================================================
+   BACKGROUND SPIN
+========================================================= */
+
+#background.is-spinning {
+
+    animation:
+        backgroundSpin
+        600s
+        linear
+        infinite;
+
+}
+
+
+@keyframes backgroundSpin {
+
+    from {
+
+        transform:
+            scale(1.12)
+            rotate(0deg);
+
+    }
+
+    to {
+
+        transform:
+            scale(1.12)
+            rotate(360deg);
+
+    }
+
+}
+
+
 /* =========================================================
    BACKGROUND OVERLAY
 ========================================================= */
