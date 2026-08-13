@@ -1,463 +1,372 @@
-/* =========================================================
+/* ============================================================
+   ROOT
+============================================================ */
+
+:root {
+    --card-size: 220px;
+    --card-expanded-width: 440px;
+
+    --radius: 34px;
+    --card-gap: 24px;
+
+    --accent: #1ed760;
+
+    --background: #080808;
+
+    --text: #ffffff;
+    --text-muted: rgba(255, 255, 255, 0.62);
+}
+
+
+/* ============================================================
    RESET
-========================================================= */
+============================================================ */
 
 * {
     box-sizing: border-box;
-}
-
-
-html,
-body {
-
-    width: 100%;
-    height: 100%;
-
     margin: 0;
     padding: 0;
+}
 
-    overflow: hidden;
+
+html {
+    width: 100%;
+    min-height: 100%;
+
+    background: var(--background);
+
+    scroll-behavior: smooth;
 }
 
 
 body {
+    width: 100%;
+    min-height: 100vh;
+
+    overflow-x: hidden;
+
+    background: var(--background);
+
+    color: var(--text);
 
     font-family:
         Inter,
-        ui-sans-serif,
-        system-ui,
         -apple-system,
         BlinkMacSystemFont,
         "Segoe UI",
         sans-serif;
 
-    color: white;
-
-    background:
-        #080808;
-
-    -webkit-font-smoothing:
-        antialiased;
-
-    text-rendering:
-        optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }
 
 
-/* =========================================================
-   VARIABLES
-========================================================= */
-
-:root {
-
-    --card-size:
-        220px;
-
-    --card-expanded-width:
-        440px;
-
-    --radius:
-        34px;
-
-    --card-gap:
-        24px;
-
-    --accent:
-        #1ed760;
-
-    --background:
-        #080808;
-
-    --text-primary:
-        #ffffff;
-
-    --text-secondary:
-        rgba(255, 255, 255, 0.68);
-}
-
-
-/* =========================================================
+/* ============================================================
    BACKGROUND
-========================================================= */
+============================================================ */
 
 #background {
+    position: fixed;
 
-    position:
-        fixed;
+    inset: -75px;
 
-    inset:
-        -100px;
-
-    z-index:
-        -3;
+    z-index: -3;
 
     background-image:
         url("musics/default-bg.png");
 
-    background-size:
-        cover;
+    background-size: cover;
+    background-position: center;
 
-    background-position:
-        center;
+    background-repeat: no-repeat;
 
-    background-repeat:
-        no-repeat;
+    filter: blur(75px);
 
-    filter:
-        blur(75px);
+    opacity: 0.42;
 
-    transform:
-        scale(1.12);
+    transform: scale(1.12);
 
-    opacity:
-        0.42;
+    transition:
+        opacity 0.65s ease,
+        transform 1.2s ease;
 
     will-change:
         background-image,
-        filter,
-        transform,
-        opacity;
-
-    transition:
-
-        background-image
-            0.25s ease,
-
-        filter
-            0.6s cubic-bezier(.2,.8,.2,1),
-
-        transform
-            0.8s cubic-bezier(.2,.8,.2,1),
-
-        opacity
-            0.4s ease;
+        opacity,
+        transform;
 }
 
 
+#background.changing {
+    opacity: 0.08;
 
-/* =========================================================
-   BACKGROUND SPIN
-========================================================= */
-
-#background.is-spinning {
-
-    animation:
-        backgroundSpin
-        600s
-        linear
-        infinite;
-
+    transform:
+        scale(1.17)
+        rotate(0.5deg);
 }
 
-
-@keyframes backgroundSpin {
-
-    from {
-
-        transform:
-            scale(1.5)
-            rotate(0deg);
-
-    }
-
-    to {
-
-        transform:
-            scale(1.5)
-            rotate(360deg);
-
-    }
-
-}
-
-
-/* =========================================================
-   BACKGROUND OVERLAY
-========================================================= */
 
 #background-overlay {
+    position: fixed;
 
-    position:
-        fixed;
+    inset: 0;
 
-    inset:
-        0;
+    z-index: -2;
 
-    z-index:
-        -2;
-
-    pointer-events:
-        none;
+    pointer-events: none;
 
     background:
-
-        linear-gradient(
-            180deg,
-            rgba(0, 0, 0, 0.42),
-            rgba(0, 0, 0, 0.70)
+        radial-gradient(
+            circle at center,
+            rgba(0, 0, 0, 0.10),
+            rgba(0, 0, 0, 0.62)
         );
+
+    opacity: 0.72;
 }
 
 
-/* =========================================================
+/* ============================================================
    MAIN
-========================================================= */
+============================================================ */
 
 main {
+    position: relative;
 
-    width:
-        100%;
+    width: 100%;
+    min-height: 100vh;
 
-    height:
-        100%;
-
-    position:
-        relative;
-
-    display:
-        flex;
-
-    flex-direction:
-        column;
+    overflow: hidden;
 }
 
 
-/* =========================================================
+/* ============================================================
    HERO
-========================================================= */
+============================================================ */
 
 .hero {
+    min-height: 62vh;
 
-    flex-shrink:
-        0;
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
 
     padding:
-        52px
-        60px
-        20px;
+        80px
+        40px
+        45px;
 }
 
 
 .hero-content {
+    width: 100%;
+    max-width: 1200px;
 
-    max-width:
-        900px;
+    text-align: center;
 }
 
 
 .eyebrow {
+    display: block;
 
-    display:
-        block;
-
-    margin-bottom:
-        10px;
-
-    font-size:
-        12px;
-
-    font-weight:
-        700;
-
-    letter-spacing:
-        0.18em;
+    margin-bottom: 18px;
 
     color:
-        rgba(255, 255, 255, 0.55);
+        rgba(255, 255, 255, 0.62);
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.32em;
+
+    text-transform: uppercase;
 }
 
-
-/* =========================================================
-   HERO TEXT
-========================================================= */
 
 .text {
+    position: relative;
+
+    max-width: 1100px;
+
+    margin: 0 auto;
+
+    color: white;
 
     font-size:
-        50px;
+        clamp(
+            42px,
+            6.2vw,
+            100px
+        );
 
-    font-weight:
-        800;
+    line-height: 0.88;
 
-    line-height:
-        0.55;
+    font-weight: 900;
 
-    letter-spacing:
-        -0.055em;
+    letter-spacing: -0.075em;
 
-    white-space:
-        nowrap;
+    text-transform: uppercase;
+
+    user-select: none;
+
+    text-wrap: balance;
 }
 
 
-.hero p {
-
-    margin:
-        28px
-        0
-        0;
-
-    font-size:
-        20px;
-
-    font-weight:
-        150;
+.hero-content p {
+    margin-top: 26px;
 
     color:
-        var(--text-secondary);
+        rgba(255, 255, 255, 0.64);
+
+    font-size: 15px;
+
+    font-weight: 500;
 }
 
 
-/* =========================================================
+/* ============================================================
    MUSIC CONTAINER
-========================================================= */
+============================================================ */
 
 .music-container {
+    position: relative;
 
-    flex:
-        1;
-
-    min-height:
-        0;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    overflow:
-        hidden;
+    width: 100%;
 
     padding:
-        20px
-        0
-        70px;
+        35px 0
+        45px;
 }
 
 
-/* =========================================================
-   MUSIC LIST
-========================================================= */
-
 #music-list {
+    display: flex;
 
-    width:
-        100%;
+    align-items: center;
 
-    display:
-        flex;
+    gap: var(--card-gap);
 
-    align-items:
-        center;
-
-    gap:
-        var(--card-gap);
-
-    overflow-x:
-        auto;
-
-    overflow-y:
-        visible;
+    width: max-content;
+    min-width: 100%;
 
     padding:
-        70px
-        60px;
+        30px
+        max(
+            30px,
+            calc((100vw - var(--card-size)) / 2)
+        );
 
-    scroll-behavior:
-        smooth;
+    overflow-x: auto;
+    overflow-y: visible;
 
-    scroll-snap-type:
-        x proximity;
+    scrollbar-width: none;
 
-    scrollbar-width:
-        none;
+    scroll-behavior: smooth;
+
+    overscroll-behavior-x: contain;
 }
 
 
 #music-list::-webkit-scrollbar {
-
-    display:
-        none;
+    display: none;
 }
 
 
-/* =========================================================
+/* ============================================================
    MUSIC CARD
-========================================================= */
+============================================================ */
 
 .music-card {
+    position: relative;
 
-    position:
-        relative;
-
-    flex-shrink:
-        0;
-
-    width:
+    flex:
+        0 0
         var(--card-size);
 
-    height:
-        var(--card-size);
+    width: var(--card-size);
+    height: var(--card-size);
 
-    overflow:
-        hidden;
+    min-width: 0;
 
-    border-radius:
-        var(--radius);
+    border-radius: var(--radius);
 
-    scroll-snap-align:
-        center;
-
-    cursor:
-        pointer;
-
-    isolation:
-        isolate;
+    overflow: hidden;
 
     background-color:
-        rgba(255, 255, 255, 0.08);
+        rgba(255, 255, 255, 0.02);
 
-    background-image:
-        var(--cover);
+    background-size: cover;
+    background-position: center;
 
-    background-size:
-        cover;
+    cursor: pointer;
 
-    background-position:
-        center;
-
-    background-repeat:
-        no-repeat;
+    isolation: isolate;
 
     box-shadow:
-        0 18px 50px
-        rgba(0, 0, 0, 0.30);
-
-    will-change:
-        width,
-        transform;
+        0 20px 55px
+        rgba(0, 0, 0, 0.32);
 
     transition:
-
         width
-            0.5s cubic-bezier(.2,.8,.2,1),
+        0.45s
+        cubic-bezier(0.22, 1, 0.36, 1),
+
+        flex-basis
+        0.45s
+        cubic-bezier(0.22, 1, 0.36, 1),
 
         transform
-            0.45s cubic-bezier(.2,.8,.2,1),
+        0.45s
+        cubic-bezier(0.22, 1, 0.36, 1),
 
         box-shadow
-            0.45s ease;
+        0.45s
+        ease;
 }
 
 
-/* =========================================================
-   CARD HOVER
-========================================================= */
+/* ============================================================
+   CARD BLURRED BACKGROUND
+============================================================ */
+
+.music-card::after {
+    content: "";
+
+    position: absolute;
+
+    inset: -25px;
+
+    z-index: -1;
+
+    background-image:
+        var(--card-image);
+
+    background-size: cover;
+    background-position: center;
+
+    filter:
+        blur(22px)
+        saturate(1.15);
+
+    transform: scale(1.08);
+
+    opacity: 0;
+
+    transition:
+        opacity 0.45s ease,
+        transform 0.65s ease;
+}
+
 
 .music-card:hover {
+    width: var(--card-expanded-width);
 
-    width:
+    flex-basis:
         var(--card-expanded-width);
 
     transform:
@@ -465,831 +374,590 @@ main {
         scale(1.02);
 
     box-shadow:
-        0 35px 100px
-        rgba(0, 0, 0, 0.58);
-}
-
-
-/* =========================================================
-   COVER
-========================================================= */
-
-.cover {
-
-    position:
-        absolute;
-
-    inset:
-        0;
-
-    width:
-        100%;
-
-    height:
-        100%;
-
-    object-fit:
-        cover;
-
-    border-radius:
-        inherit;
-
-    z-index:
-        0;
-
-    opacity:
-        1;
-
-    transform:
-        scale(1);
-
-    filter:
-        blur(0);
-
-    transition:
-
-        opacity
-            0.55s cubic-bezier(.2,.8,.2,1),
-
-        transform
-            1s cubic-bezier(.2,.8,.2,1),
-
-        filter
-            0.8s ease;
-}
-
-
-.music-card:hover .cover {
-
-    opacity:
-        0;
-
-    transform:
-        scale(1.08);
-
-    filter:
-        blur(12px);
-}
-
-
-/* =========================================================
-   CARD BACKGROUND BLUR
-========================================================= */
-
-.music-card::before {
-
-    content:
-        "";
-
-    position:
-        absolute;
-
-    inset:
-        -30px;
-
-    z-index:
-        1;
-
-    pointer-events:
-        none;
-
-    background:
-        inherit;
-
-    background-size:
-        cover;
-
-    background-position:
-        center;
-
-    opacity:
-        0;
-
-    filter:
-        blur(0);
-
-    transform:
-        scale(1.05);
-
-    transition:
-
-        opacity
-            0.6s ease,
-
-        filter
-            0.8s cubic-bezier(.2,.8,.2,1),
-
-        transform
-            1s cubic-bezier(.2,.8,.2,1);
-}
-
-
-.music-card:hover::before {
-
-    opacity:
-        1;
-
-    filter:
-        blur(8px);
-
-    transform:
-        scale(1.08);
-}
-
-
-/* =========================================================
-   CARD GRADIENT
-========================================================= */
-
-.music-card::after {
-
-    content:
-        "";
-
-    position:
-        absolute;
-
-    inset:
-        0;
-
-    z-index:
-        2;
-
-    pointer-events:
-        none;
-
-    opacity:
-        0;
-
-    background:
-
-        linear-gradient(
-            180deg,
-
-            rgba(0, 0, 0, 0.08) 0%,
-
-            rgba(0, 0, 0, 0.15) 30%,
-
-            rgba(0, 0, 0, 0.58) 65%,
-
-            rgba(0, 0, 0, 0.93) 100%
-        );
-
-    transition:
-        opacity
-        0.45s ease;
+        0 30px 80px
+        rgba(0, 0, 0, 0.48);
 }
 
 
 .music-card:hover::after {
+    opacity: 0.78;
 
-    opacity:
-        1;
+    transform:
+        scale(1.14);
 }
 
 
-/* =========================================================
-   VOTED PILL
-========================================================= */
+/* ============================================================
+   CARD DARK OVERLAY
+============================================================ */
 
-.voted-pill {
+.music-card::before {
+    content: "";
 
-    position:
-        absolute;
+    position: absolute;
 
-    top:
-        14px;
+    inset: 0;
 
-    right:
-        14px;
+    z-index: 1;
 
-    z-index:
-        10;
+    pointer-events: none;
 
-    height:
-        32px;
-
-    padding:
-        0
-        11px
-        0
-        7px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        7px;
-
-    border-radius:
-        999px;
+    border-radius: inherit;
 
     background:
-        rgba(255, 255, 255, 0.90);
+        linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0.84),
+            rgba(0, 0, 0, 0.18) 65%,
+            rgba(0, 0, 0, 0)
+        );
 
-    color:
-        #000;
-
-    font-size:
-        11px;
-
-    font-weight:
-        750;
-
-    backdrop-filter:
-        blur(18px);
-
-    -webkit-backdrop-filter:
-        blur(18px);
-
-    box-shadow:
-        0 6px 20px
-        rgba(0, 0, 0, 0.22);
-
-    pointer-events:
-        none;
-
-    opacity:
-        0;
-
-    transform:
-        translateY(-5px)
-        scale(0.94);
+    opacity: 0;
 
     transition:
-
-        opacity
-            0.3s ease,
-
-        transform
-            0.35s cubic-bezier(.2,.8,.2,1);
+        opacity 0.45s ease;
 }
 
 
-/* =========================================================
-   VOTED ICON
-========================================================= */
-
-.voted-pill img {
-
-    width:
-        20px;
-
-    height:
-        20px;
-
-    object-fit:
-        contain;
-
-    flex-shrink:
-        0;
+.music-card:hover::before {
+    opacity: 1;
 }
 
 
-/* =========================================================
-   SHOW VOTED PILL
-========================================================= */
+/* ============================================================
+   COVER
+============================================================ */
 
-.music-card.has-vote .voted-pill {
+.cover {
+    position: absolute;
 
-    opacity:
-        1;
+    inset: 0;
 
-    transform:
-        translateY(0)
-        scale(1);
-}
-
-
-/* =========================================================
-   HIDE VOTED PILL WHILE CARD IS OPEN
-========================================================= */
-
-.music-card:hover .voted-pill {
-
-    opacity:
-        0;
-
-    transform:
-        translateY(-5px)
-        scale(0.94);
-}
-
-
-/* =========================================================
-   INFO
-========================================================= */
-
-.info {
-
-    position:
-        absolute;
-
-    inset:
-        0;
-
-    z-index:
-        3;
-
-    padding:
-        28px;
-
-    display:
-        flex;
-
-    flex-direction:
-        column;
-
-    justify-content:
-        flex-end;
-
-    opacity:
-        0;
-
-    transform:
-        translateY(20px);
-
-    pointer-events:
-        none;
-
-    transition:
-
-        opacity
-            0.35s ease 0.08s,
-
-        transform
-            0.5s cubic-bezier(.2,.8,.2,1)
-            0.08s;
-}
-
-
-.music-card:hover .info {
-
-    opacity:
-        1;
-
-    transform:
-        translateY(0);
-
-    pointer-events:
-        auto;
-}
-
-
-/* =========================================================
-   TITLE
-========================================================= */
-
-.info h2 {
-
-    max-width:
-        100%;
-
-    margin:
-        0
-        0
-        5px;
-
-    padding-right:
-        55px;
-
-    font-size:
-        21px;
-
-    line-height:
-        1.12;
-
-    font-weight:
-        750;
-
-    letter-spacing:
-        -0.025em;
-
-    overflow:
-        hidden;
-
-    text-overflow:
-        ellipsis;
-
-    display:
-        -webkit-box;
-
-    -webkit-line-clamp:
-        2;
-
-    -webkit-box-orient:
-        vertical;
-}
-
-
-/* =========================================================
-   ARTIST
-========================================================= */
-
-.info > p {
-
-    max-width:
-        100%;
-
-    margin:
-        0;
-
-    padding-right:
-        55px;
-
-    font-size:
-        14px;
-
-    line-height:
-        1.3;
-
-    color:
-        rgba(255, 255, 255, 0.72);
-
-    overflow:
-        hidden;
-
-    text-overflow:
-        ellipsis;
-
-    white-space:
-        nowrap;
-}
-
-
-/* =========================================================
-   DESCRIPTION
-========================================================= */
-
-.description {
-
-    margin:
-        12px
-        0
-        0;
-
-    max-width:
-        100%;
-
-    font-size:
-        12px;
-
-    line-height:
-        1.45;
-
-    color:
-        rgba(255, 255, 255, 0.62);
-
-    overflow:
-        hidden;
-
-    display:
-        -webkit-box;
-
-    -webkit-line-clamp:
-        3;
-
-    -webkit-box-orient:
-        vertical;
-}
-
-
-/* =========================================================
-   META
-========================================================= */
-
-.info-meta {
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    flex-wrap:
-        wrap;
-
-    gap:
-        6px;
-
-    margin-top:
-        12px;
-}
-
-
-.info-meta span {
-
-    padding:
-        5px
-        9px;
-
-    border-radius:
-        999px;
-
-    font-size:
-        11px;
-
-    color:
-        rgba(255, 255, 255, 0.70);
+    z-index: 0;
 
     background:
-        rgba(255, 255, 255, 0.12);
-
-    backdrop-filter:
-        blur(12px);
-}
-
-
-/* =========================================================
-   ACTIONS
-========================================================= */
-
-.card-actions {
-
-    width:
-        100%;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        8px;
-
-    margin-top:
-        15px;
-}
-
-
-/* =========================================================
-   SPOTIFY BUTTON
-========================================================= */
-
-.spotify-button {
-
-    flex:
-        1;
-
-    min-width:
-        0;
-
-    height:
-        40px;
-
-    padding:
-        0
-        14px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    border:
-        none;
-
-    border-radius:
-        999px;
-
-    background:
-        var(--accent);
-
-    color:
-        #000;
-
-    text-decoration:
-        none;
-
-    font-size:
-        12px;
-
-    font-weight:
-        750;
-
-    white-space:
-        nowrap;
-
-    overflow:
-        hidden;
-
-    text-overflow:
-        ellipsis;
-
-    transition:
-
-        transform
-            0.2s ease,
-
-        filter
-            0.2s ease,
-
-        box-shadow
-            0.2s ease;
-}
-
-
-.spotify-button:hover {
-
-    transform:
-        scale(1.025);
-
-    filter:
-        brightness(1.08);
-
-    box-shadow:
-        0 8px 28px
-        rgba(30, 215, 96, 0.25);
-}
-
-
-.spotify-button:active {
-
-    transform:
-        scale(0.97);
-}
-
-
-/* =========================================================
-   VOTE BUTTON
-========================================================= */
-
-.vote-button {
-
-    flex:
-        0 0 92px;
-
-    height:
-        40px;
-
-    padding:
-        0
-        18px;
-
-    border:
-        none;
-
-    border-radius:
-        999px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    background:
-        rgba(255, 255, 255, 0.14);
-
-    color:
-        white;
-
-    font-family:
         inherit;
 
-    font-size:
-        12px;
-
-    font-weight:
-        750;
-
-    cursor:
-        pointer;
-
-    backdrop-filter:
-        blur(15px);
-
-    -webkit-backdrop-filter:
-        blur(15px);
+    background-size: cover;
+    background-position: center;
 
     transition:
-
-        transform
-            0.2s ease,
-
-        background
-            0.2s ease,
-
-        color
-            0.2s ease;
+        opacity 0.45s ease,
+        transform 0.6s ease,
+        filter 0.6s ease;
 }
 
 
-.vote-button:hover {
+.music-card:hover .cover {
+    opacity: 0.08;
 
     transform:
-        scale(1.04);
+        scale(1.08);
 
-    background:
-        rgba(255, 255, 255, 0.24);
+    filter:
+        blur(5px)
+        saturate(0.8);
 }
 
 
-.vote-button:active {
+/* ============================================================
+   VOTED PILL
+============================================================ */
 
-    transform:
-        scale(0.96);
-}
+.voted-pill {
+    position: absolute;
 
+    top: 16px;
+    right: 16px;
 
-/* =========================================================
-   VOTED BUTTON
-========================================================= */
+    z-index: 6;
 
-.vote-button.voted {
+    display: flex;
 
-    background:
-        rgba(255, 255, 255, 0.92);
+    align-items: center;
 
-    color:
-        #000;
-}
-
-
-.vote-button.voted:hover {
-
-    background:
-        #ffffff;
-}
-
-
-/* =========================================================
-   PLAYING CARD
-========================================================= */
-
-.music-card.is-playing {
-
-    box-shadow:
-        0 25px 80px
-        rgba(0, 0, 0, 0.45);
-}
-
-
-/* =========================================================
-   MUSIC PLAYER
-========================================================= */
-
-.music-player {
-
-    position:
-        fixed;
-
-    top:
-        28px;
-
-    right:
-        30px;
-
-    z-index:
-        100;
-
-    height:
-        48px;
-
-    min-width:
-        100px;
+    gap: 6px;
 
     padding:
-        4px
-        13px
-        4px
-        5px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        9px;
+        7px
+        10px;
 
     border:
         1px solid
         rgba(255, 255, 255, 0.12);
 
-    border-radius:
-        999px;
+    border-radius: 999px;
+
+    background:
+        rgba(255, 255, 255, 0.12);
+
+    color: white;
+
+    font-size: 10px;
+
+    font-weight: 750;
+
+    backdrop-filter:
+        blur(14px);
+
+    -webkit-backdrop-filter:
+        blur(14px);
+
+    opacity: 0;
+
+    transform:
+        translateY(-5px);
+
+    transition:
+        opacity 0.3s ease,
+        transform 0.3s ease;
+}
+
+
+.music-card.has-vote .voted-pill {
+    opacity: 1;
+
+    transform:
+        translateY(0);
+}
+
+
+.voted-pill img {
+    width: 13px;
+    height: 13px;
+
+    object-fit: contain;
+}
+
+
+/* ============================================================
+   INFO
+============================================================ */
+
+.info {
+    position: absolute;
+
+    left: 24px;
+    right: 24px;
+    bottom: 24px;
+
+    z-index: 5;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    opacity: 0;
+
+    transform:
+        translateY(15px);
+
+    transition:
+        opacity 0.4s ease,
+        transform 0.45s
+        cubic-bezier(0.22, 1, 0.36, 1);
+
+    pointer-events: none;
+}
+
+
+.music-card:hover .info {
+    opacity: 1;
+
+    transform:
+        translateY(0);
+
+    pointer-events: auto;
+}
+
+
+/* ============================================================
+   TITLE
+============================================================ */
+
+.song-title {
+    max-width: 100%;
+
+    margin-bottom: 5px;
+
+    color: white;
+
+    font-size: 26px;
+
+    line-height: 1.05;
+
+    font-weight: 850;
+
+    letter-spacing: -0.04em;
+
+    text-shadow:
+        0 2px 18px
+        rgba(0, 0, 0, 0.45);
+}
+
+
+/* ============================================================
+   ARTIST
+============================================================ */
+
+.artist {
+    margin-bottom: 12px;
+
+    color:
+        rgba(255, 255, 255, 0.72);
+
+    font-size: 13px;
+
+    font-weight: 600;
+}
+
+
+/* ============================================================
+   DESCRIPTION
+============================================================ */
+
+.description {
+    display: -webkit-box;
+
+    max-width: 380px;
+
+    margin-bottom: 14px;
+
+    overflow: hidden;
+
+    color:
+        rgba(255, 255, 255, 0.76);
+
+    font-size: 12px;
+
+    line-height: 1.45;
+
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+
+/* ============================================================
+   META
+============================================================ */
+
+.meta {
+    display: flex;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 7px;
+
+    margin-bottom: 18px;
+}
+
+
+.meta span {
+    padding:
+        5px
+        9px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.10);
+
+    border-radius: 999px;
+
+    background:
+        rgba(255, 255, 255, 0.07);
+
+    color:
+        rgba(255, 255, 255, 0.64);
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    backdrop-filter:
+        blur(10px);
+
+    -webkit-backdrop-filter:
+        blur(10px);
+}
+
+
+/* ============================================================
+   CARD ACTIONS
+============================================================ */
+
+.card-actions {
+    display: flex;
+
+    align-items: center;
+
+    width: 100%;
+
+    gap: 8px;
+
+    margin-top: auto;
+}
+
+
+/* ============================================================
+   LIQUID GLASS SHARED
+============================================================ */
+
+.spotify-button,
+.vote-button {
+    position: relative;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.14);
+
+    border-radius: 999px;
+
+    isolation: isolate;
+
+    backdrop-filter:
+        brightness(1.1)
+        blur(2px)
+        url(#liquidGlass);
+
+    -webkit-backdrop-filter:
+        brightness(1.1)
+        blur(2px)
+        url(#liquidGlass);
+
+    box-shadow:
+        inset 6px 6px 0 -6px
+        rgba(255, 255, 255, 0.7),
+
+        inset 0 0 8px 1px
+        rgba(255, 255, 255, 0.55),
+
+        0 6px 20px
+        rgba(0, 0, 0, 0.12);
+
+    transition:
+        transform 0.2s ease,
+        filter 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.spotify-button::before,
+.vote-button::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: -1;
+
+    border-radius: inherit;
+
+    pointer-events: none;
+
+    box-shadow:
+        inset 2px 2px 0 -2px
+        rgba(255, 255, 255, 0.7),
+
+        inset 0 0 3px 1px
+        rgba(255, 255, 255, 0.7);
+}
+
+
+/* ============================================================
+   SPOTIFY BUTTON
+============================================================ */
+
+.spotify-button {
+    flex: 1;
+
+    height: 40px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding:
+        0
+        18px;
+
+    background:
+        rgba(30, 215, 96, 0.18);
+
+    color:
+        #d8ffe6;
+
+    font-size: 12px;
+
+    font-weight: 750;
+
+    text-decoration: none;
+
+    white-space: nowrap;
+}
+
+
+.spotify-button::before {
+    background:
+        linear-gradient(
+            135deg,
+            rgba(30, 215, 96, 0.18),
+            rgba(30, 215, 96, 0.03)
+        );
+}
+
+
+.spotify-button:hover {
+    transform:
+        translateY(-1px)
+        scale(1.025);
+
+    background:
+        rgba(30, 215, 96, 0.25);
+
+    filter:
+        brightness(1.08)
+        drop-shadow(
+            0 0 18px
+            rgba(30, 215, 96, 0.14)
+        );
+
+    box-shadow:
+        inset 6px 6px 0 -6px
+        rgba(255, 255, 255, 0.8),
+
+        inset 0 0 8px 1px
+        rgba(255, 255, 255, 0.65),
+
+        0 0 22px
+        rgba(30, 215, 96, 0.16);
+}
+
+
+/* ============================================================
+   VOTE BUTTON
+============================================================ */
+
+.vote-button {
+    flex:
+        0 0 92px;
+
+    width: 92px;
+    height: 40px;
+
+    background:
+        rgba(255, 255, 255, 0.10);
+
+    color: white;
+
+    font-family: inherit;
+
+    font-size: 12px;
+
+    font-weight: 750;
+
+    cursor: pointer;
+}
+
+
+.vote-button::before {
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+
+.vote-button:hover {
+    transform:
+        translateY(-1px)
+        scale(1.025);
+
+    background:
+        rgba(255, 255, 255, 0.16);
+
+    filter:
+        brightness(1.08);
+}
+
+
+.vote-button:active {
+    transform:
+        scale(0.97);
+}
+
+
+/* ============================================================
+   VOTED BUTTON
+============================================================ */
+
+.vote-button.voted {
+    background:
+        rgba(255, 255, 255, 0.88);
+
+    color:
+        #090909;
+}
+
+
+.vote-button.voted:hover {
+    background:
+        rgba(255, 255, 255, 0.96);
+}
+
+
+.vote-button img {
+    width: 13px;
+    height: 13px;
+
+    margin-right: 5px;
+
+    object-fit: contain;
+
+    vertical-align: middle;
+}
+
+
+/* ============================================================
+   MUSIC PLAYER
+============================================================ */
+
+.music-player {
+    position: fixed;
+
+    top: 20px;
+    right: 20px;
+
+    z-index: 50;
+
+    height: 48px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    padding:
+        0
+        12px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    border-radius: 999px;
 
     background:
         rgba(20, 20, 20, 0.50);
 
-    color:
-        white;
-
-    cursor:
-        pointer;
+    color: white;
 
     backdrop-filter:
         blur(22px);
@@ -1298,248 +966,226 @@ main {
         blur(22px);
 
     box-shadow:
-        0 12px 40px
-        rgba(0, 0, 0, 0.30);
+        0 10px 35px
+        rgba(0, 0, 0, 0.22);
+
+    cursor: pointer;
 
     transition:
-
-        transform
-            0.25s ease,
-
-        background
-            0.25s ease,
-
-        box-shadow
-            0.25s ease;
+        transform 0.2s ease,
+        background 0.2s ease;
 }
 
 
 .music-player:hover {
-
     transform:
-        scale(1.04);
+        scale(1.025);
 
     background:
         rgba(30, 30, 30, 0.62);
-
-    box-shadow:
-        0 16px 50px
-        rgba(0, 0, 0, 0.42);
 }
 
 
 .music-player:active {
-
     transform:
         scale(0.97);
 }
 
 
-/* =========================================================
+/* ============================================================
    PLAYER ICON
-========================================================= */
+============================================================ */
 
 .player-icon {
+    width: 28px;
+    height: 28px;
 
-    width:
-        40px;
+    display: flex;
 
-    height:
-        40px;
+    align-items: center;
+    justify-content: center;
 
-    border-radius:
-        50%;
+    overflow: hidden;
 
-    overflow:
-        hidden;
-
-    flex-shrink:
-        0;
-
-    background:
-        rgba(255, 255, 255, 0.08);
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
+    border-radius: 999px;
 }
 
 
 .player-icon img {
+    width: 28px;
+    height: 28px;
 
-    width:
-        100%;
+    display: block;
 
-    height:
-        100%;
-
-    object-fit:
-        cover;
-
-    display:
-        block;
-
-    pointer-events:
-        none;
+    object-fit: cover;
 }
 
 
-/* =========================================================
-   VISUALIZER
-========================================================= */
+/* ============================================================
+   VISUALIZER LIQUID GLASS PILL
+============================================================ */
 
 .visualizer {
+    position: relative;
 
-    height:
-        28px;
+    height: 28px;
+    min-width: 38px;
 
-    display:
-        flex;
+    display: flex;
 
-    align-items:
-        center;
+    align-items: center;
+    justify-content: center;
 
-    justify-content:
-        center;
-
-    gap:
-        3px;
+    gap: 3px;
 
     padding:
         0
-        2px;
+        7px;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.14);
+
+    border-radius: 999px;
+
+    background:
+        rgba(255, 255, 255, 0.09);
+
+    isolation: isolate;
+
+    backdrop-filter:
+        brightness(1.1)
+        blur(2px)
+        url(#liquidGlass);
+
+    -webkit-backdrop-filter:
+        brightness(1.1)
+        blur(2px)
+        url(#liquidGlass);
+
+    box-shadow:
+        inset 4px 4px 0 -4px
+        rgba(255, 255, 255, 0.7),
+
+        inset 0 0 6px 1px
+        rgba(255, 255, 255, 0.55);
+}
+
+
+.visualizer::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: -1;
+
+    border-radius: inherit;
+
+    pointer-events: none;
+
+    box-shadow:
+        inset 2px 2px 0 -2px
+        rgba(255, 255, 255, 0.7),
+
+        inset 0 0 3px 1px
+        rgba(255, 255, 255, 0.65);
 }
 
 
 .visualizer span {
+    position: relative;
 
-    width:
-        3px;
+    z-index: 1;
 
-    height:
-        8px;
+    width: 3px;
+    height: 8px;
 
-    border-radius:
-        999px;
+    border-radius: 999px;
 
     background:
-        rgba(255, 255, 255, 0.75);
+        rgba(255, 255, 255, 0.78);
 
-    transform-origin:
-        center;
+    transform-origin: center;
 
-    transition:
-        height
-        0.15s ease;
+    animation: none;
 }
 
 
-/* =========================================================
-   VISUALIZER PLAYING
-========================================================= */
+/* ============================================================
+   VISUALIZER ANIMATIONS
+============================================================ */
 
-.music-player.playing .visualizer span:nth-child(1) {
-
+.music-player.playing
+.visualizer span:nth-child(1) {
     animation:
-        visualizer1
-        0.8s ease-in-out
+        visualizerBar1
+        0.9s
+        ease-in-out
         infinite;
 }
 
 
-.music-player.playing .visualizer span:nth-child(2) {
-
+.music-player.playing
+.visualizer span:nth-child(2) {
     animation:
-        visualizer2
-        0.65s ease-in-out
+        visualizerBar2
+        0.72s
+        ease-in-out
         infinite;
 }
 
 
-.music-player.playing .visualizer span:nth-child(3) {
-
+.music-player.playing
+.visualizer span:nth-child(3) {
     animation:
-        visualizer3
-        0.9s ease-in-out
+        visualizerBar3
+        0.82s
+        ease-in-out
         infinite;
 }
 
 
-.music-player.playing .visualizer span:nth-child(4) {
-
+.music-player.playing
+.visualizer span:nth-child(4) {
     animation:
-        visualizer4
-        0.7s ease-in-out
-        infinite;
-}
-
-.music-player.playing .visualizer span:nth-child(5) {
-
-    animation:
-        visualizer5
-        0.8s ease-in-out
+        visualizerBar4
+        0.68s
+        ease-in-out
         infinite;
 }
 
 
-@keyframes visualizer1 {
+@keyframes visualizerBar1 {
 
     0%,
     100% {
-        height: 7px;
-    }
-
-    50% {
-        height: 22px;
-    }
-}
-
-
-@keyframes visualizer2 {
-
-    0%,
-    100% {
-        height: 14px;
-    }
-
-    50% {
-        height: 7px;
-    }
-}
-
-
-@keyframes visualizer3 {
-
-    0%,
-    100% {
-        height: 9px;
-    }
-
-    50% {
-        height: 25px;
-    }
-}
-
-
-@keyframes visualizer4 {
-
-    0%,
-    100% {
-        height: 19px;
-    }
-
-    50% {
         height: 6px;
     }
+
+    50% {
+        height: 14px;
+    }
 }
 
 
-@keyframes visualizer5 {
+@keyframes visualizerBar2 {
+
+    0%,
+    100% {
+        height: 13px;
+    }
+
+    50% {
+        height: 5px;
+    }
+}
+
+
+@keyframes visualizerBar3 {
 
     0%,
     100% {
@@ -1547,54 +1193,63 @@ main {
     }
 
     50% {
-        height: 20px;
+        height: 16px;
     }
 }
 
 
-/* =========================================================
+@keyframes visualizerBar4 {
+
+    0%,
+    100% {
+        height: 11px;
+    }
+
+    50% {
+        height: 5px;
+    }
+}
+
+
+/* ============================================================
    SCROLL HINT
-========================================================= */
+============================================================ */
 
 .scroll-hint {
+    display: flex;
 
-    position:
-        absolute;
+    align-items: center;
+    justify-content: center;
 
-    right:
-        60px;
+    gap: 10px;
 
-    bottom:
-        30px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        10px;
-
-    font-size:
-        12px;
+    padding:
+        20px
+        30px
+        50px;
 
     color:
-        rgba(255, 255, 255, 0.45);
+        rgba(255, 255, 255, 0.38);
 
-    pointer-events:
-        none;
+    font-size: 11px;
+
+    font-weight: 650;
+
+    letter-spacing: 0.08em;
+
+    text-transform: uppercase;
+
+    user-select: none;
 }
 
 
 .scroll-arrow {
-
-    font-size:
-        18px;
+    font-size: 16px;
 
     animation:
         scrollArrow
-        1.5s ease-in-out
+        1.6s
+        ease-in-out
         infinite;
 }
 
@@ -1609,296 +1264,73 @@ main {
 
     50% {
         transform:
-            translateX(7px);
+            translateX(5px);
     }
 }
 
 
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media (max-width: 700px) {
-
-    :root {
-
-        --card-size:
-            180px;
-
-        --card-expanded-width:
-            360px;
-
-        --radius:
-            28px;
-
-        --card-gap:
-            16px;
-    }
-
-
-    .hero {
-
-        padding:
-            30px
-            30px
-            10px;
-    }
-
-
-    .text {
-
-        font-size:
-            38px;
-    }
-
-
-    .hero p {
-
-        font-size:
-            14px;
-    }
-
-
-    #music-list {
-
-        padding:
-            45px
-            30px;
-    }
-
-
-    .music-container {
-
-        padding-bottom:
-            50px;
-    }
-
-
-    .info {
-
-        padding:
-            20px;
-    }
-
-
-    .info h2 {
-
-        font-size:
-            17px;
-    }
-
-
-    .info > p {
-
-        font-size:
-            13px;
-    }
-
-
-    .description {
-
-        font-size:
-            11px;
-    }
-
-
-    .card-actions {
-
-        gap:
-            6px;
-    }
-
-
-    .spotify-button {
-
-        height:
-            36px;
-
-        font-size:
-            11px;
-
-        padding:
-            0
-            10px;
-    }
-
-
-    .vote-button {
-
-        flex-basis:
-            80px;
-
-        height:
-            36px;
-
-        font-size:
-            11px;
-    }
-
-
-    .voted-pill {
-
-        top:
-            10px;
-
-        right:
-            10px;
-
-        height:
-            29px;
-
-        font-size:
-            10px;
-    }
-
-
-    .voted-pill img {
-
-        width:
-            18px;
-
-        height:
-            18px;
-    }
-
-
-    .music-player {
-
-        top:
-            18px;
-
-        right:
-            18px;
-
-        height:
-            44px;
-    }
-
-
-    .player-icon {
-
-        width:
-            36px;
-
-        height:
-            36px;
-    }
-
-
-    .scroll-hint {
-
-        right:
-            30px;
-
-        bottom:
-            20px;
-    }
-}
-
-/* =========================================================
-   LOADING SCREEN
-========================================================= */
+/* ============================================================
+   LOADER
+============================================================ */
 
 #loader {
+    position: fixed;
 
-    position:
-        fixed;
+    inset: 0;
 
-    inset:
-        0;
+    z-index: 9999;
 
-    z-index:
-        9999;
+    display: flex;
 
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
+    align-items: center;
+    justify-content: center;
 
     background:
         #080808;
 
-    opacity:
-        1;
+    opacity: 1;
 
-    visibility:
-        visible;
+    visibility: visible;
 
     transition:
-
-        opacity
-            0.6s ease,
-
-        visibility
-            0.6s ease;
+        opacity 0.6s ease,
+        visibility 0.6s ease;
 }
 
-
-/* =========================================================
-   LOADER HIDDEN
-========================================================= */
 
 #loader.loaded {
+    opacity: 0;
 
-    opacity:
-        0;
-
-    visibility:
-        hidden;
-
-    pointer-events:
-        none;
+    visibility: hidden;
 }
 
-
-/* =========================================================
-   LOADER CONTENT
-========================================================= */
 
 .loader-content {
+    display: flex;
 
-    display:
-        flex;
+    flex-direction: column;
 
-    flex-direction:
-        column;
+    align-items: center;
+    justify-content: center;
 
-    align-items:
-        center;
-
-    gap:
-        18px;
+    gap: 18px;
 }
 
 
-/* =========================================================
-   LOADER SPINNER
-========================================================= */
-
 .loader-spinner {
-
-    width:
-        32px;
-
-    height:
-        32px;
-
-    border-radius:
-        50%;
+    width: 34px;
+    height: 34px;
 
     border:
-        3px solid
+        2px solid
         rgba(255, 255, 255, 0.12);
 
     border-top-color:
-        rgba(255, 255, 255, 0.85);
+        rgba(255, 255, 255, 0.9);
+
+    border-radius: 50%;
 
     animation:
-
         loaderSpin
         0.8s
         linear
@@ -1906,37 +1338,166 @@ main {
 }
 
 
-/* =========================================================
-   LOADER TEXT
-========================================================= */
-
 .loader-text {
-
-    font-size:
-        12px;
-
-    font-weight:
-        700;
-
-    letter-spacing:
-        0.15em;
-
     color:
-        rgba(255, 255, 255, 0.55);
+        rgba(255, 255, 255, 0.48);
+
+    font-size: 10px;
+
+    font-weight: 750;
+
+    letter-spacing: 0.22em;
 }
 
-
-/* =========================================================
-   LOADER ANIMATION
-========================================================= */
 
 @keyframes loaderSpin {
 
     to {
-
         transform:
             rotate(360deg);
+    }
+}
 
+
+/* ============================================================
+   LOADER ERROR
+============================================================ */
+
+#loader.error .loader-spinner {
+    animation: none;
+
+    border-color:
+        rgba(255, 255, 255, 0.25);
+}
+
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+
+@media (max-width: 700px) {
+
+    :root {
+        --card-size: 180px;
+        --card-expanded-width: 340px;
+        --card-gap: 16px;
+        --radius: 28px;
+    }
+
+
+    .hero {
+        min-height: 58vh;
+
+        padding:
+            80px
+            24px
+            40px;
+    }
+
+
+    .text {
+        font-size:
+            clamp(
+                38px,
+                12vw,
+                72px
+            );
+    }
+
+
+    .hero-content p {
+        font-size: 13px;
+    }
+
+
+    #music-list {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+
+    .music-card:hover {
+        transform:
+            translateY(-8px)
+            scale(1.01);
+    }
+
+
+    .info {
+        left: 18px;
+        right: 18px;
+        bottom: 18px;
+    }
+
+
+    .song-title {
+        font-size: 21px;
+    }
+
+
+    .description {
+        font-size: 11px;
+    }
+
+
+    .spotify-button,
+    .vote-button {
+        height: 36px;
+
+        font-size: 10px;
+    }
+
+
+    .vote-button {
+        flex-basis: 78px;
+
+        width: 78px;
+    }
+
+
+    .music-player {
+        top: 12px;
+        right: 12px;
+
+        height: 44px;
+    }
+
+
+    .player-icon,
+    .player-icon img {
+        width: 25px;
+        height: 25px;
+    }
+
+
+    .visualizer {
+        height: 25px;
+
+        min-width: 35px;
+    }
+
+}
+
+
+/* ============================================================
+   REDUCED MOTION
+============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+
+        animation-duration:
+            0.01ms !important;
+
+        animation-iteration-count:
+            1 !important;
+
+        transition-duration:
+            0.01ms !important;
     }
 
 }
