@@ -1212,7 +1212,7 @@ async function playBackgroundMusic() {
         // ----------------------------------------------------
 
         playerGif.src =
-            "musics/play-pause.gif";
+            "musics/pause-play.gif";
 
 
         setTimeout(() => {
@@ -1262,7 +1262,7 @@ function pauseBackgroundMusic() {
     // --------------------------------------------------------
 
     playerGif.src =
-        "musics/pause-play.gif";
+        "musics/play-pause.gif";
 
 
     setTimeout(() => {

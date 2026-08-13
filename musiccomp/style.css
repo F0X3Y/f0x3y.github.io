@@ -40,6 +40,8 @@ html {
 
 
 body {
+    position: relative;
+
     width: 100%;
     min-height: 100vh;
 
@@ -70,7 +72,9 @@ body {
 
     inset: -75px;
 
-    z-index: -3;
+    z-index: 0;
+
+    pointer-events: none;
 
     background-image:
         url("musics/default-bg.png");
@@ -88,7 +92,8 @@ body {
 
     transition:
         opacity 0.65s ease,
-        transform 1.2s ease;
+        transform 1.2s ease,
+        background-image 0s;
 
     will-change:
         background-image,
@@ -111,15 +116,15 @@ body {
 
     inset: 0;
 
-    z-index: -2;
+    z-index: 1;
 
     pointer-events: none;
 
     background:
         radial-gradient(
             circle at center,
-            rgba(0, 0, 0, 0.10),
-            rgba(0, 0, 0, 0.62)
+            rgba(0, 0, 0, 0.05),
+            rgba(0, 0, 0, 0.58)
         );
 
     opacity: 0.72;
@@ -132,6 +137,8 @@ body {
 
 main {
     position: relative;
+
+    z-index: 2;
 
     width: 100%;
     min-height: 100vh;
@@ -254,12 +261,11 @@ main {
     width: max-content;
     min-width: 100%;
 
-    padding:
-        30px
-        max(
-            30px,
-            calc((100vw - var(--card-size)) / 2)
-        );
+    padding-top: 30px;
+    padding-bottom: 30px;
+
+    padding-left: 30px;
+    padding-right: 30px;
 
     overflow-x: auto;
     overflow-y: visible;
@@ -291,7 +297,7 @@ main {
     width: var(--card-size);
     height: var(--card-size);
 
-    min-width: 0;
+    min-width: var(--card-size);
 
     border-radius: var(--radius);
 
@@ -703,7 +709,7 @@ main {
 
 
 /* ============================================================
-   LIQUID GLASS SHARED
+   LIQUID GLASS BUTTONS
 ============================================================ */
 
 .spotify-button,
@@ -735,10 +741,7 @@ main {
         rgba(255, 255, 255, 0.7),
 
         inset 0 0 8px 1px
-        rgba(255, 255, 255, 0.55),
-
-        0 6px 20px
-        rgba(0, 0, 0, 0.12);
+        rgba(255, 255, 255, 0.55);
 
     transition:
         transform 0.2s ease,
@@ -772,7 +775,7 @@ main {
 
 
 /* ============================================================
-   SPOTIFY BUTTON
+   SPOTIFY
 ============================================================ */
 
 .spotify-button {
@@ -824,11 +827,7 @@ main {
         rgba(30, 215, 96, 0.25);
 
     filter:
-        brightness(1.08)
-        drop-shadow(
-            0 0 18px
-            rgba(30, 215, 96, 0.14)
-        );
+        brightness(1.08);
 
     box-shadow:
         inset 6px 6px 0 -6px
@@ -843,7 +842,7 @@ main {
 
 
 /* ============================================================
-   VOTE BUTTON
+   VOTE
 ============================================================ */
 
 .vote-button {
@@ -893,10 +892,6 @@ main {
 }
 
 
-/* ============================================================
-   VOTED BUTTON
-============================================================ */
-
 .vote-button.voted {
     background:
         rgba(255, 255, 255, 0.88);
@@ -925,7 +920,7 @@ main {
 
 
 /* ============================================================
-   MUSIC PLAYER
+   MUSIC PLAYER — WHOLE THING IS LIQUID GLASS
 ============================================================ */
 
 .music-player {
@@ -950,30 +945,68 @@ main {
 
     border:
         1px solid
-        rgba(255, 255, 255, 0.08);
+        rgba(255, 255, 255, 0.18);
 
     border-radius: 999px;
 
     background:
-        rgba(20, 20, 20, 0.50);
+        rgba(255, 255, 255, 0.09);
 
     color: white;
 
-    backdrop-filter:
-        blur(22px);
+    isolation: isolate;
 
-    -webkit-backdrop-filter:
-        blur(22px);
-
-    box-shadow:
-        0 10px 35px
-        rgba(0, 0, 0, 0.22);
+    overflow: hidden;
 
     cursor: pointer;
 
+    backdrop-filter:
+        brightness(1.1)
+        blur(2px)
+        url(#liquidGlass);
+
+    -webkit-backdrop-filter:
+        brightness(1.1)
+        blur(2px)
+        url(#liquidGlass);
+
+    box-shadow:
+        inset 6px 6px 0 -6px
+        rgba(255, 255, 255, 0.75),
+
+        inset 0 0 8px 1px
+        rgba(255, 255, 255, 0.62),
+
+        0 10px 35px
+        rgba(0, 0, 0, 0.22);
+
     transition:
         transform 0.2s ease,
-        background 0.2s ease;
+        background 0.2s ease,
+        box-shadow 0.2s ease,
+        filter 0.2s ease;
+}
+
+
+.music-player::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: -1;
+
+    border-radius: inherit;
+
+    pointer-events: none;
+
+    box-shadow:
+        inset 2px 2px 0 -2px
+        rgba(255, 255, 255, 0.75),
+
+        inset 0 0 3px 1px
+        rgba(255, 255, 255, 0.72);
 }
 
 
@@ -982,7 +1015,20 @@ main {
         scale(1.025);
 
     background:
-        rgba(30, 30, 30, 0.62);
+        rgba(255, 255, 255, 0.14);
+
+    filter:
+        brightness(1.06);
+
+    box-shadow:
+        inset 6px 6px 0 -6px
+        rgba(255, 255, 255, 0.85),
+
+        inset 0 0 8px 1px
+        rgba(255, 255, 255, 0.72),
+
+        0 14px 42px
+        rgba(0, 0, 0, 0.28);
 }
 
 
@@ -997,6 +1043,8 @@ main {
 ============================================================ */
 
 .player-icon {
+    position: relative;
+
     width: 28px;
     height: 28px;
 
@@ -1022,14 +1070,12 @@ main {
 
 
 /* ============================================================
-   VISUALIZER LIQUID GLASS PILL
+   VISUALIZER
+   Just the bars — NO separate pill
 ============================================================ */
 
 .visualizer {
-    position: relative;
-
     height: 28px;
-    min-width: 38px;
 
     display: flex;
 
@@ -1040,69 +1086,26 @@ main {
 
     padding:
         0
-        7px;
+        2px;
 
-    overflow: hidden;
+    background: transparent;
 
-    border:
-        1px solid
-        rgba(255, 255, 255, 0.14);
+    border: none;
 
-    border-radius: 999px;
+    backdrop-filter: none;
 
-    background:
-        rgba(255, 255, 255, 0.09);
+    -webkit-backdrop-filter: none;
 
-    isolation: isolate;
-
-    backdrop-filter:
-        brightness(1.1)
-        blur(2px)
-        url(#liquidGlass);
-
-    -webkit-backdrop-filter:
-        brightness(1.1)
-        blur(2px)
-        url(#liquidGlass);
-
-    box-shadow:
-        inset 4px 4px 0 -4px
-        rgba(255, 255, 255, 0.7),
-
-        inset 0 0 6px 1px
-        rgba(255, 255, 255, 0.55);
-}
-
-
-.visualizer::before {
-    content: "";
-
-    position: absolute;
-
-    inset: 0;
-
-    z-index: -1;
-
-    border-radius: inherit;
-
-    pointer-events: none;
-
-    box-shadow:
-        inset 2px 2px 0 -2px
-        rgba(255, 255, 255, 0.7),
-
-        inset 0 0 3px 1px
-        rgba(255, 255, 255, 0.65);
+    box-shadow: none;
 }
 
 
 .visualizer span {
-    position: relative;
-
-    z-index: 1;
-
     width: 3px;
     height: 8px;
+
+    flex:
+        0 0 3px;
 
     border-radius: 999px;
 
@@ -1112,6 +1115,10 @@ main {
     transform-origin: center;
 
     animation: none;
+
+    box-shadow:
+        0 0 6px
+        rgba(255, 255, 255, 0.16);
 }
 
 
@@ -1472,8 +1479,6 @@ main {
 
     .visualizer {
         height: 25px;
-
-        min-width: 35px;
     }
 
 }
