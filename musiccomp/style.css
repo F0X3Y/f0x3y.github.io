@@ -299,8 +299,9 @@ main {
 
     gap: var(--card-gap);
 
-    width: max-content;
-    min-width: 100%;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
 
     padding-top: 30px;
     padding-bottom: 30px;
