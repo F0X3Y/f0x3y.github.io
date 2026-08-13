@@ -10,49 +10,97 @@ const loader = document.getElementById("loader");
 // SETTINGS
 // ============================================================
 
-const DEFAULT_COVER = "musics/covers/default.png";
-const DEFAULT_BACKGROUND = "musics/default-bg.png";
-const VOTED_ICON = "musics/voted.png";
+const DEFAULT_COVER =
+    "musics/covers/default.png";
 
-const NORMAL_VOLUME = 0.0;
-const HOVER_VOLUME = 0.75;
-const BACKGROUND_VOLUME = 0.15;
+const DEFAULT_BACKGROUND =
+    "musics/default-bg.png";
 
-const BACKGROUND_FADE_OUT = 650;
-const BACKGROUND_FADE_IN = 900;
-const AUDIO_FADE_DURATION = 650;
+const VOTED_ICON =
+    "musics/voted.png";
 
-const PLAY_ANIMATION_DURATION = 585;
-const PAUSE_ANIMATION_DURATION = 585;
+
+const NORMAL_VOLUME =
+    0.0;
+
+const HOVER_VOLUME =
+    0.75;
+
+const BACKGROUND_VOLUME =
+    0.15;
+
+
+const BACKGROUND_FADE_OUT =
+    650;
+
+const BACKGROUND_FADE_IN =
+    900;
+
+const AUDIO_FADE_DURATION =
+    650;
+
+
+const PLAY_ANIMATION_DURATION =
+    585;
+
+const PAUSE_ANIMATION_DURATION =
+    585;
 
 
 // ============================================================
 // STATE
 // ============================================================
 
-let currentAudio = null;
-let currentCard = null;
+let currentAudio =
+    null;
 
-let backgroundMusicEnabled = false;
+let currentCard =
+    null;
 
-let backgroundMusicFadeFrame = null;
+let backgroundMusicEnabled =
+    false;
 
-let backgroundChangeToken = 0;
+let backgroundMusicFadeFrame =
+    null;
+
+let backgroundChangeToken =
+    0;
 
 
 // ============================================================
 // HELPERS
 // ============================================================
 
-function clamp(value, min, max) {
-    return Math.min(Math.max(value, min), max);
+function clamp(
+    value,
+    min,
+    max
+) {
+
+    return Math.min(
+        Math.max(
+            value,
+            min
+        ),
+        max
+    );
+
 }
 
 
 function sleep(ms) {
-    return new Promise(resolve => {
-        setTimeout(resolve, ms);
-    });
+
+    return new Promise(
+        resolve => {
+
+            setTimeout(
+                resolve,
+                ms
+            );
+
+        }
+    );
+
 }
 
 
@@ -70,44 +118,77 @@ function fadeAudio(
         return;
     }
 
-    const startVolume = audio.volume;
-    const difference = targetVolume - startVolume;
 
-    if (Math.abs(difference) < 0.001) {
-        audio.volume = targetVolume;
+    const startVolume =
+        audio.volume;
+
+    const difference =
+        targetVolume -
+        startVolume;
+
+
+    if (
+        Math.abs(difference) <
+        0.001
+    ) {
+
+        audio.volume =
+            targetVolume;
+
         return;
     }
 
-    const startTime = performance.now();
 
-    function update(currentTime) {
+    const startTime =
+        performance.now();
+
+
+    function update(
+        currentTime
+    ) {
 
         const elapsed =
-            currentTime - startTime;
+            currentTime -
+            startTime;
+
 
         const progress =
             clamp(
-                elapsed / duration,
+                elapsed /
+                duration,
                 0,
                 1
             );
 
+
         audio.volume =
             startVolume +
-            difference * progress;
+            difference *
+            progress;
 
-        if (progress < 1) {
 
-            requestAnimationFrame(update);
+        if (
+            progress < 1
+        ) {
+
+            requestAnimationFrame(
+                update
+            );
 
         } else {
 
-            audio.volume = targetVolume;
+            audio.volume =
+                targetVolume;
 
         }
+
     }
 
-    requestAnimationFrame(update);
+
+    requestAnimationFrame(
+        update
+    );
+
 }
 
 
@@ -124,59 +205,83 @@ function fadeBackgroundMusic(
         return;
     }
 
-    if (backgroundMusicFadeFrame !== null) {
+
+    if (
+        backgroundMusicFadeFrame !==
+        null
+    ) {
 
         cancelAnimationFrame(
             backgroundMusicFadeFrame
         );
 
-        backgroundMusicFadeFrame = null;
+        backgroundMusicFadeFrame =
+            null;
     }
+
 
     const startVolume =
         backgroundMusic.volume;
 
     const difference =
-        targetVolume - startVolume;
+        targetVolume -
+        startVolume;
 
     const startTime =
         performance.now();
 
 
-    function update(currentTime) {
+    function update(
+        currentTime
+    ) {
 
         const elapsed =
-            currentTime - startTime;
+            currentTime -
+            startTime;
+
 
         const progress =
             clamp(
-                elapsed / duration,
+                elapsed /
+                duration,
                 0,
                 1
             );
 
+
         backgroundMusic.volume =
             startVolume +
-            difference * progress;
+            difference *
+            progress;
 
-        if (progress < 1) {
+
+        if (
+            progress < 1
+        ) {
 
             backgroundMusicFadeFrame =
-                requestAnimationFrame(update);
+                requestAnimationFrame(
+                    update
+                );
 
         } else {
 
             backgroundMusic.volume =
                 targetVolume;
 
-            backgroundMusicFadeFrame = null;
+            backgroundMusicFadeFrame =
+                null;
 
         }
+
     }
 
 
     backgroundMusicFadeFrame =
-        requestAnimationFrame(update);
+        requestAnimationFrame(
+            update
+        );
+
 }
 
 
@@ -186,22 +291,34 @@ function fadeBackgroundMusic(
 
 function preloadImage(src) {
 
-    return new Promise(resolve => {
+    return new Promise(
+        resolve => {
 
-        if (!src) {
-            resolve();
-            return;
+            if (!src) {
+
+                resolve();
+
+                return;
+            }
+
+
+            const image =
+                new Image();
+
+
+            image.onload =
+                resolve;
+
+            image.onerror =
+                resolve;
+
+
+            image.src =
+                src;
+
         }
+    );
 
-        const image =
-            new Image();
-
-        image.onload = resolve;
-        image.onerror = resolve;
-
-        image.src = src;
-
-    });
 }
 
 
@@ -211,38 +328,59 @@ function preloadImage(src) {
 
 function preloadAudio(src) {
 
-    return new Promise(resolve => {
+    return new Promise(
+        resolve => {
 
-        if (!src) {
-            resolve();
-            return;
+            if (!src) {
+
+                resolve();
+
+                return;
+            }
+
+
+            const audio =
+                new Audio();
+
+
+            audio.preload =
+                "auto";
+
+
+            const done =
+                () => {
+
+                    resolve();
+
+                };
+
+
+            audio.addEventListener(
+                "canplaythrough",
+                done,
+                {
+                    once: true
+                }
+            );
+
+
+            audio.addEventListener(
+                "error",
+                done,
+                {
+                    once: true
+                }
+            );
+
+
+            audio.src =
+                src;
+
+            audio.load();
+
         }
+    );
 
-        const audio =
-            new Audio();
-
-        audio.preload = "auto";
-
-        const done = () => {
-            resolve();
-        };
-
-        audio.addEventListener(
-            "canplaythrough",
-            done,
-            { once: true }
-        );
-
-        audio.addEventListener(
-            "error",
-            done,
-            { once: true }
-        );
-
-        audio.src = src;
-        audio.load();
-
-    });
 }
 
 
@@ -250,34 +388,64 @@ function preloadAudio(src) {
 // PRELOAD ASSETS
 // ============================================================
 
-async function preloadAssets(songs) {
+async function preloadAssets(
+    songs
+) {
 
     const images = [
+
         DEFAULT_COVER,
+
         DEFAULT_BACKGROUND,
+
         VOTED_ICON
+
     ];
 
-    const audios = [];
 
-    for (const song of songs) {
+    const audios =
+        [];
+
+
+    for (
+        const song
+        of songs
+    ) {
 
         if (song.cover) {
-            images.push(song.cover);
+
+            images.push(
+                song.cover
+            );
+
         }
 
-        if (song.audio) {
-            audios.push(song.audio);
+
+        if (song.preview) {
+
+            audios.push(
+                song.preview
+            );
+
         }
 
     }
 
 
     const uniqueImages =
-        [...new Set(images)];
+        [
+            ...new Set(
+                images
+            )
+        ];
+
 
     const uniqueAudios =
-        [...new Set(audios)];
+        [
+            ...new Set(
+                audios
+            )
+        ];
 
 
     await Promise.all([
@@ -291,6 +459,7 @@ async function preloadAssets(songs) {
         )
 
     ]);
+
 }
 
 
@@ -298,54 +467,85 @@ async function preloadAssets(songs) {
 // BACKGROUND
 // ============================================================
 
-async function changeBackground(image) {
+async function changeBackground(
+    image
+) {
 
     if (!image) {
-        image = DEFAULT_BACKGROUND;
+
+        image =
+            DEFAULT_BACKGROUND;
+
     }
+
 
     const token =
         ++backgroundChangeToken;
 
-    await preloadImage(image);
+
+    await preloadImage(
+        image
+    );
+
 
     if (
-        token !== backgroundChangeToken
+        token !==
+        backgroundChangeToken
     ) {
+
         return;
+
     }
+
 
     background.classList.add(
         "changing"
     );
 
-    await sleep(120);
+
+    await sleep(
+        120
+    );
+
 
     if (
-        token !== backgroundChangeToken
+        token !==
+        backgroundChangeToken
     ) {
+
         return;
+
     }
+
 
     background.style.backgroundImage =
         `url("${image}")`;
 
+
     background.classList.remove(
         "changing"
     );
+
 }
 
+
+// ============================================================
+// RESET BACKGROUND
+// ============================================================
 
 function resetBackground() {
 
     backgroundChangeToken++;
 
+
     background.style.backgroundImage =
         `url("${DEFAULT_BACKGROUND}")`;
+
 
     background.classList.remove(
         "changing"
     );
+
 }
 
 
@@ -353,15 +553,20 @@ function resetBackground() {
 // CARD AUDIO
 // ============================================================
 
-async function startCardAudio(card) {
+async function startCardAudio(
+    card
+) {
 
     const audio =
         card.querySelector(
             ".card-audio"
         );
 
+
     if (!audio) {
+
         return;
+
     }
 
 
@@ -376,22 +581,36 @@ async function startCardAudio(card) {
             AUDIO_FADE_DURATION
         );
 
-        setTimeout(() => {
 
-            if (
-                currentAudio &&
-                currentAudio !== audio
-            ) {
-                currentAudio.pause();
-                currentAudio.currentTime = 0;
-            }
+        setTimeout(
+            () => {
 
-        }, AUDIO_FADE_DURATION + 20);
+                if (
+                    currentAudio &&
+                    currentAudio !== audio
+                ) {
+
+                    currentAudio.pause();
+
+                    currentAudio.currentTime =
+                        0;
+
+                }
+
+            },
+            AUDIO_FADE_DURATION +
+            20
+        );
+
     }
 
 
-    currentAudio = audio;
-    currentCard = card;
+    currentAudio =
+        audio;
+
+    currentCard =
+        card;
+
 
     audio.volume =
         NORMAL_VOLUME;
@@ -400,6 +619,7 @@ async function startCardAudio(card) {
     try {
 
         await audio.play();
+
 
         fadeAudio(
             audio,
@@ -415,18 +635,28 @@ async function startCardAudio(card) {
         );
 
     }
+
 }
 
 
-function stopCardAudio(card) {
+// ============================================================
+// STOP CARD AUDIO
+// ============================================================
+
+function stopCardAudio(
+    card
+) {
 
     const audio =
         card.querySelector(
             ".card-audio"
         );
 
+
     if (!audio) {
+
         return;
+
     }
 
 
@@ -437,22 +667,32 @@ function stopCardAudio(card) {
     );
 
 
-    setTimeout(() => {
+    setTimeout(
+        () => {
 
-        audio.pause();
-        audio.currentTime = 0;
+            audio.pause();
 
-    }, AUDIO_FADE_DURATION + 30);
+            audio.currentTime =
+                0;
+
+        },
+        AUDIO_FADE_DURATION +
+        30
+    );
 
 
     if (
         currentAudio === audio
     ) {
 
-        currentAudio = null;
-        currentCard = null;
+        currentAudio =
+            null;
+
+        currentCard =
+            null;
 
     }
+
 }
 
 
@@ -465,28 +705,72 @@ async function handleCardEnter(
     song
 ) {
 
-    await changeBackground(
-        song.cover || DEFAULT_BACKGROUND
+    /*
+        Elkezdjük a teljes weblap BG
+        600 másodperces forgását.
+    */
+    background.classList.add(
+        "card-hover"
     );
 
 
+    /*
+        Kártya saját BG-je
+        + teljes oldal BG-váltása.
+    */
+    await changeBackground(
+        song.cover ||
+        DEFAULT_BACKGROUND
+    );
+
+
+    /*
+        A background music halkul.
+    */
     fadeBackgroundMusic(
         0,
         BACKGROUND_FADE_OUT
     );
 
 
+    /*
+        Elindítjuk a card preview-t.
+    */
     await startCardAudio(
         card
     );
+
 }
 
 
-function handleCardLeave(card) {
+function handleCardLeave(
+    card
+) {
 
-    stopCardAudio(card);
+    /*
+        A teljes BG forgása megáll,
+        de NEM ugrik vissza 0°-ra.
+
+        Mivel az animation csak paused lesz
+        a class eltávolításával, az aktuális
+        forgási pozíció megmarad.
+    */
+    background.classList.remove(
+        "card-hover"
+    );
 
 
+    /*
+        Preview audio fade out.
+    */
+    stopCardAudio(
+        card
+    );
+
+
+    /*
+        Background music visszajön.
+    */
     fadeBackgroundMusic(
         backgroundMusicEnabled
             ? BACKGROUND_VOLUME
@@ -495,7 +779,11 @@ function handleCardLeave(card) {
     );
 
 
+    /*
+        Visszaáll az alap BG.
+    */
     resetBackground();
+
 }
 
 
@@ -509,8 +797,10 @@ function getVoteKey(
 ) {
 
     return `musiccomp-vote-${
-        song.spotify || index
+        song.spotify ||
+        index
     }`;
+
 }
 
 
@@ -524,6 +814,7 @@ function updateVoteButton(
         button.classList.add(
             "voted"
         );
+
 
         button.innerHTML = `
             <img
@@ -539,9 +830,12 @@ function updateVoteButton(
             "voted"
         );
 
+
         button.textContent =
             "Vote";
+
     }
+
 }
 
 
@@ -573,10 +867,13 @@ function setupVoteButton(
     if (savedVote) {
 
         button
-            .closest(".music-card")
+            .closest(
+                ".music-card"
+            )
             ?.classList.add(
                 "has-vote"
             );
+
     }
 
 
@@ -585,6 +882,7 @@ function setupVoteButton(
         event => {
 
             event.preventDefault();
+
             event.stopPropagation();
 
 
@@ -627,6 +925,7 @@ function setupVoteButton(
 
         }
     );
+
 }
 
 
@@ -650,7 +949,8 @@ function createCard(
 
 
     const cover =
-        song.cover || DEFAULT_COVER;
+        song.cover ||
+        DEFAULT_COVER;
 
 
     const title =
@@ -688,6 +988,10 @@ function createCard(
         "#";
 
 
+    /*
+        A kártya saját blurred backgroundje
+        innen kapja az image-et.
+    */
     card.style.setProperty(
         "--card-image",
         `url("${cover}")`
@@ -707,6 +1011,7 @@ function createCard(
             "div"
         );
 
+
     coverElement.className =
         "cover";
 
@@ -719,6 +1024,7 @@ function createCard(
         document.createElement(
             "div"
         );
+
 
     votedPill.className =
         "voted-pill";
@@ -742,7 +1048,7 @@ function createCard(
     // AUDIO
     // ========================================================
 
-    if (song.audio) {
+    if (song.preview) {
 
         const audio =
             document.createElement(
@@ -755,7 +1061,7 @@ function createCard(
 
 
         audio.src =
-            song.audio;
+            song.preview;
 
 
         audio.preload =
@@ -769,6 +1075,7 @@ function createCard(
         card.appendChild(
             audio
         );
+
     }
 
 
@@ -780,6 +1087,7 @@ function createCard(
         document.createElement(
             "div"
         );
+
 
     info.className =
         "info";
@@ -854,6 +1162,7 @@ function createCard(
         info.appendChild(
             descriptionElement
         );
+
     }
 
 
@@ -884,12 +1193,15 @@ function createCard(
                     "span"
                 );
 
+
             element.textContent =
                 album;
+
 
             meta.appendChild(
                 element
             );
+
         }
 
 
@@ -900,12 +1212,15 @@ function createCard(
                     "span"
                 );
 
+
             element.textContent =
                 year;
+
 
             meta.appendChild(
                 element
             );
+
         }
 
 
@@ -916,18 +1231,22 @@ function createCard(
                     "span"
                 );
 
+
             element.textContent =
                 genre;
+
 
             meta.appendChild(
                 element
             );
+
         }
 
 
         info.appendChild(
             meta
         );
+
     }
 
 
@@ -1072,6 +1391,7 @@ function createCard(
 
 
     return card;
+
 }
 
 
@@ -1120,7 +1440,10 @@ async function loadSongs() {
 
 
         songs.forEach(
-            (song, index) => {
+            (
+                song,
+                index
+            ) => {
 
                 createCard(
                     song,
@@ -1140,12 +1463,15 @@ async function loadSongs() {
         );
 
 
-        setTimeout(() => {
+        setTimeout(
+            () => {
 
-            loader.style.display =
-                "none";
+                loader.style.display =
+                    "none";
 
-        }, 600);
+            },
+            600
+        );
 
 
     } catch (error) {
@@ -1175,6 +1501,7 @@ async function loadSongs() {
         }
 
     }
+
 }
 
 
@@ -1187,6 +1514,7 @@ async function playBackgroundMusic() {
     try {
 
         await backgroundMusic.play();
+
 
         backgroundMusicEnabled =
             true;
@@ -1215,18 +1543,21 @@ async function playBackgroundMusic() {
             "musics/pause-play.gif";
 
 
-        setTimeout(() => {
+        setTimeout(
+            () => {
 
-            if (
-                backgroundMusicEnabled
-            ) {
+                if (
+                    backgroundMusicEnabled
+                ) {
 
-                playerGif.src =
-                    "musics/pause.jpg";
+                    playerGif.src =
+                        "musics/pause.jpg";
 
-            }
+                }
 
-        }, PLAY_ANIMATION_DURATION);
+            },
+            PLAY_ANIMATION_DURATION
+        );
 
 
     } catch (error) {
@@ -1237,6 +1568,7 @@ async function playBackgroundMusic() {
         );
 
     }
+
 }
 
 
@@ -1265,31 +1597,38 @@ function pauseBackgroundMusic() {
         "musics/play-pause.gif";
 
 
-    setTimeout(() => {
+    setTimeout(
+        () => {
 
-        if (
-            !backgroundMusicEnabled
-        ) {
+            if (
+                !backgroundMusicEnabled
+            ) {
 
-            playerGif.src =
-                "musics/play.jpg";
+                playerGif.src =
+                    "musics/play.jpg";
 
-        }
+            }
 
-    }, PAUSE_ANIMATION_DURATION);
+        },
+        PAUSE_ANIMATION_DURATION
+    );
 
 
-    setTimeout(() => {
+    setTimeout(
+        () => {
 
-        if (
-            !backgroundMusicEnabled
-        ) {
+            if (
+                !backgroundMusicEnabled
+            ) {
 
-            backgroundMusic.pause();
+                backgroundMusic.pause();
 
-        }
+            }
 
-    }, BACKGROUND_FADE_OUT);
+        },
+        BACKGROUND_FADE_OUT
+    );
+
 }
 
 
@@ -1310,6 +1649,7 @@ async function toggleBackgroundMusic() {
         pauseBackgroundMusic();
 
     }
+
 }
 
 
@@ -1332,11 +1672,16 @@ musicList.addEventListener(
     event => {
 
         if (
-            Math.abs(event.deltaY) >
-            Math.abs(event.deltaX)
+            Math.abs(
+                event.deltaY
+            ) >
+            Math.abs(
+                event.deltaX
+            )
         ) {
 
             event.preventDefault();
+
 
             musicList.scrollLeft +=
                 event.deltaY;
@@ -1364,6 +1709,16 @@ backgroundMusic.volume =
 
 backgroundMusicEnabled =
     false;
+
+
+background.classList.remove(
+    "card-hover"
+);
+
+
+background.classList.remove(
+    "changing"
+);
 
 
 musicPlayer.classList.remove(
