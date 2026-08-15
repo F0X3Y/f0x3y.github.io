@@ -118,9 +118,212 @@
                     THE 2000TH
                 </span>
 
+
+                <!-- =========================================
+                     LIQUID GLASS TITLE
+                ========================================== -->
+
                 <div class="text">
-                    MY 2000TH SONG
+
+                    <svg
+                        class="glass-title"
+                        viewBox="0 0 1200 120"
+                        preserveAspectRatio="xMidYMid meet"
+                        aria-label="MY 2000TH SONG"
+                        role="img"
+                    >
+
+                        <defs>
+
+                            <!-- =================================
+                                 TITLE GLASS FILTER
+                            ================================== -->
+
+                            <filter
+                                id="titleGlass"
+                                x="-10%"
+                                y="-20%"
+                                width="120%"
+                                height="140%"
+                            >
+
+                                <feGaussianBlur
+                                    in="SourceGraphic"
+                                    stdDeviation="0.6"
+                                    result="blur"
+                                />
+
+                                <feSpecularLighting
+                                    in="blur"
+                                    surfaceScale="3"
+                                    specularConstant="0.5"
+                                    specularExponent="18"
+                                    lighting-color="white"
+                                    result="specular"
+                                >
+
+                                    <feDistantLight
+                                        azimuth="225"
+                                        elevation="55"
+                                    />
+
+                                </feSpecularLighting>
+
+                                <feComposite
+                                    in="specular"
+                                    in2="SourceGraphic"
+                                    operator="in"
+                                    result="highlight"
+                                />
+
+                                <feMerge>
+
+                                    <feMergeNode
+                                        in="SourceGraphic"
+                                    />
+
+                                    <feMergeNode
+                                        in="highlight"
+                                    />
+
+                                </feMerge>
+
+                            </filter>
+
+
+                            <!-- =================================
+                                 INNER GLASS FILL
+                            ================================== -->
+
+                            <linearGradient
+                                id="titleGlassFill"
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                            >
+
+                                <stop
+                                    offset="0%"
+                                    stop-color="white"
+                                    stop-opacity="0.34"
+                                />
+
+                                <stop
+                                    offset="28%"
+                                    stop-color="white"
+                                    stop-opacity="0.13"
+                                />
+
+                                <stop
+                                    offset="55%"
+                                    stop-color="white"
+                                    stop-opacity="0.055"
+                                />
+
+                                <stop
+                                    offset="100%"
+                                    stop-color="white"
+                                    stop-opacity="0.18"
+                                />
+
+                            </linearGradient>
+
+
+                            <!-- =================================
+                                 GLASS BORDER
+                            ================================== -->
+
+                            <linearGradient
+                                id="titleGlassStroke"
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                            >
+
+                                <stop
+                                    offset="0%"
+                                    stop-color="white"
+                                    stop-opacity="0.80"
+                                />
+
+                                <stop
+                                    offset="35%"
+                                    stop-color="white"
+                                    stop-opacity="0.42"
+                                />
+
+                                <stop
+                                    offset="100%"
+                                    stop-color="white"
+                                    stop-opacity="0.58"
+                                />
+
+                            </linearGradient>
+
+                        </defs>
+
+
+                        <!-- =================================
+                             GLASS BASE
+                        ================================== -->
+
+                        <text
+                            x="600"
+                            y="86"
+                            text-anchor="middle"
+                            class="glass-title-base"
+                        >
+                            MY 2000TH SONG
+                        </text>
+
+
+                        <!-- =================================
+                             GLASS SURFACE
+                        ================================== -->
+
+                        <text
+                            x="600"
+                            y="86"
+                            text-anchor="middle"
+                            class="glass-title-surface"
+                        >
+                            MY 2000TH SONG
+                        </text>
+
+
+                        <!-- =================================
+                             BRIGHT GLASS BORDER
+                        ================================== -->
+
+                        <text
+                            x="600"
+                            y="86"
+                            text-anchor="middle"
+                            class="glass-title-border"
+                        >
+                            MY 2000TH SONG
+                        </text>
+
+
+                        <!-- =================================
+                             INNER SPECULAR HIGHLIGHT
+                        ================================== -->
+
+                        <text
+                            x="600"
+                            y="86"
+                            text-anchor="middle"
+                            class="glass-title-highlight"
+                        >
+                            MY 2000TH SONG
+                        </text>
+
+                    </svg>
+
                 </div>
+
 
                 <p>
                     The candidates competing for the spot.

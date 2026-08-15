@@ -570,6 +570,14 @@ async function startCardAudio(
     }
 
 
+    /*
+        If another card is currently audible,
+        fade it to zero.
+
+        IMPORTANT:
+        We DO NOT pause it.
+        It keeps playing silently.
+    */
     if (
         currentAudio &&
         currentAudio !== audio
@@ -579,27 +587,6 @@ async function startCardAudio(
             currentAudio,
             NORMAL_VOLUME,
             AUDIO_FADE_DURATION
-        );
-
-
-        setTimeout(
-            () => {
-
-                if (
-                    currentAudio &&
-                    currentAudio !== audio
-                ) {
-
-                    currentAudio.pause();
-
-                    currentAudio.currentTime =
-                        0;
-
-                }
-
-            },
-            AUDIO_FADE_DURATION +
-            20
         );
 
     }
@@ -612,35 +599,64 @@ async function startCardAudio(
         card;
 
 
-    audio.volume =
-        NORMAL_VOLUME;
+    /*
+        If the preview already finished,
+        restart it from the beginning.
+    */
+    if (
+        audio.ended
+    ) {
 
-
-    try {
-
-        await audio.play();
-
-
-        fadeAudio(
-            audio,
-            HOVER_VOLUME,
-            AUDIO_FADE_DURATION
-        );
-
-    } catch (error) {
-
-        console.warn(
-            "Could not play preview:",
-            error
-        );
+        audio.currentTime =
+            0;
 
     }
+
+
+    /*
+        If for some reason it is paused,
+        start it.
+
+        Normally this only happens on the
+        first hover.
+    */
+    if (
+        audio.paused
+    ) {
+
+        try {
+
+            await audio.play();
+
+        } catch (error) {
+
+            console.warn(
+                "Could not play preview:",
+                error
+            );
+
+            return;
+
+        }
+
+    }
+
+
+    /*
+        Bring the currently hovered card back
+        to audible volume.
+    */
+    fadeAudio(
+        audio,
+        HOVER_VOLUME,
+        AUDIO_FADE_DURATION
+    );
 
 }
 
 
 // ============================================================
-// STOP CARD AUDIO
+// STOP / MUTE CARD AUDIO
 // ============================================================
 
 function stopCardAudio(
@@ -660,6 +676,15 @@ function stopCardAudio(
     }
 
 
+    /*
+        IMPORTANT:
+
+        Do NOT pause.
+        Do NOT reset currentTime.
+
+        The song continues playing in the
+        background at zero volume.
+    */
     fadeAudio(
         audio,
         NORMAL_VOLUME,
@@ -667,29 +692,64 @@ function stopCardAudio(
     );
 
 
-    setTimeout(
-        () => {
+    /*
+        Do not clear currentAudio here.
 
-            audio.pause();
+        The card can still be the currently
+        tracked audio even while its volume
+        is zero.
+    */
 
-            audio.currentTime =
-                0;
-
-        },
-        AUDIO_FADE_DURATION +
-        30
-    );
+}
 
 
+// ============================================================
+// CARD AUDIO ENDED
+// ============================================================
+
+function handleCardAudioEnded(
+    card,
+    audio
+) {
+
+    /*
+        If the mouse is STILL over this card,
+        immediately restart the preview.
+    */
     if (
-        currentAudio === audio
+        card.matches(":hover")
     ) {
 
-        currentAudio =
-            null;
+        audio.currentTime =
+            0;
 
-        currentCard =
-            null;
+
+        audio.volume =
+            NORMAL_VOLUME;
+
+
+        audio.play()
+            .then(
+                () => {
+
+                    fadeAudio(
+                        audio,
+                        HOVER_VOLUME,
+                        AUDIO_FADE_DURATION
+                    );
+
+                }
+            )
+            .catch(
+                error => {
+
+                    console.warn(
+                        "Could not restart preview:",
+                        error
+                    );
+
+                }
+            );
 
     }
 
@@ -706,8 +766,7 @@ async function handleCardEnter(
 ) {
 
     /*
-        Elkezdjük a teljes weblap BG
-        600 másodperces forgását.
+        Start background rotation.
     */
     background.classList.add(
         "card-hover"
@@ -715,8 +774,7 @@ async function handleCardEnter(
 
 
     /*
-        Kártya saját BG-je
-        + teljes oldal BG-váltása.
+        Change page background.
     */
     await changeBackground(
         song.cover ||
@@ -725,7 +783,7 @@ async function handleCardEnter(
 
 
     /*
-        A background music halkul.
+        Background music fades out.
     */
     fadeBackgroundMusic(
         0,
@@ -734,7 +792,12 @@ async function handleCardEnter(
 
 
     /*
-        Elindítjuk a card preview-t.
+        Start/resume the card audio.
+
+        If it already played silently after leaving
+        the card, it continues.
+
+        If it already ended, it starts again.
     */
     await startCardAudio(
         card
@@ -748,12 +811,8 @@ function handleCardLeave(
 ) {
 
     /*
-        A teljes BG forgása megáll,
-        de NEM ugrik vissza 0°-ra.
-
-        Mivel az animation csak paused lesz
-        a class eltávolításával, az aktuális
-        forgási pozíció megmarad.
+        Stop background rotation,
+        but keep the current rotation position.
     */
     background.classList.remove(
         "card-hover"
@@ -761,7 +820,8 @@ function handleCardLeave(
 
 
     /*
-        Preview audio fade out.
+        Keep audio playing,
+        but make it silent.
     */
     stopCardAudio(
         card
@@ -769,7 +829,7 @@ function handleCardLeave(
 
 
     /*
-        Background music visszajön.
+        Background music comes back.
     */
     fadeBackgroundMusic(
         backgroundMusicEnabled
@@ -780,7 +840,7 @@ function handleCardLeave(
 
 
     /*
-        Visszaáll az alap BG.
+        Restore default background.
     */
     resetBackground();
 
@@ -989,8 +1049,7 @@ function createCard(
 
 
     /*
-        A kártya saját blurred backgroundje
-        innen kapja az image-et.
+        Card blurred background image.
     */
     card.style.setProperty(
         "--card-image",
@@ -1070,6 +1129,25 @@ function createCard(
 
         audio.volume =
             NORMAL_VOLUME;
+
+
+        /*
+            When the song reaches the end:
+
+            - hovered -> restart
+            - not hovered -> stay ended
+        */
+        audio.addEventListener(
+            "ended",
+            () => {
+
+                handleCardAudioEnded(
+                    card,
+                    audio
+                );
+
+            }
+        );
 
 
         card.appendChild(
