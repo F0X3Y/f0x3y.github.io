@@ -125,7 +125,7 @@ async function setupProfileUsername() {
 
     try {
         if (typeof window.get_username === "function") {
-            const raw = window.get_username();
+            const raw = window.get_username(SERVER_URL);
             const resolved = isPromise(raw) ? await raw : raw;
             const username = (resolved ?? "").toString().trim();
 
