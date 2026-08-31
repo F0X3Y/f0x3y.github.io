@@ -629,12 +629,17 @@ async function uploadFile(file) {
         const xhr = new XMLHttpRequest();
 
         setUploadProgress(0, true, "Feltöltés...");
+        const card=document.getElementById(file.name).querySelector("div > div.details")
+        const description=card.querySelector(".comment").value
+        const game=card.querySelector(".game").value
+
 
         xhr.open("UPLOAD", SERVER_URL, true);
         xhr.setRequestHeader("Content-Length", String(file.size));
         xhr.setRequestHeader("Content-Type", "application/octet-stream");
         xhr.setRequestHeader("filename", file.name);
         xhr.setRequestHeader(AUTH_HEADER_NAME, token);
+        xhr.setRequestHeader("description",toString({"description":description,"game":game}))
 
         xhr.upload.addEventListener("progress", (event) => {
             if (!event.lengthComputable) {
@@ -695,7 +700,7 @@ function escapeHtml(value) {
 function createClipCard(file) {
     const card = document.createElement("div");
     card.className = "clip-card collapsed";
-
+    card.id=file.name;
     const videoURL = URL.createObjectURL(file);
     const safeName = escapeHtml(file.name);
 
