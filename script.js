@@ -815,12 +815,7 @@ async function handleFiles(files) {
 
         createClipCard(file);
 
-        try {
-            await uploadFile(file);
-        } catch (error) {
-            console.error(error);
-            break;
-        }
+        
     }
 }
 
@@ -868,12 +863,21 @@ function formatSize(bytes) {
     if (fileInput && dropZone && clipContainer && submitButton) {
         submitButton.addEventListener("click", () => {
             const hasSelectedFiles = fileInput.files && fileInput.files.length > 0;
-
+            let failed=false
             if (!hasSelectedFiles) {
                 return;
             }
+            for (e in fileInput.files){
 
-            resetSubmitPage();
+                try {
+                    await uploadFile(file);
+                } catch (error) {
+                    console.error(error);
+                    failed=true
+                    break;
+                }
+            }
+            if (!failed){resetSubmitPage()};
             showUploadSuccess("Sikeres beküldés");
         });
 
