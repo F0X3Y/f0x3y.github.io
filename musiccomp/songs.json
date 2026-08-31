@@ -1,0 +1,37 @@
+[
+    {
+        "title": "Post Reference",
+        "artist": "Evade OST",
+        "cover": "musics/covers/postreference.jpg",
+        "preview": "musics/previews/postreference.mp3",
+        "spotify": "https://open.spotify.com/track/0VjIjW4GlUZAMYd2vXMi3b",
+        "votes": 67
+    },
+
+    {
+        "title": "Good Morning - Sain Mesa Remix",
+        "artist": "Sain Mesa, Max Frost",
+        "cover": "musics/covers/goodmorning.jpeg",
+        "preview": "musics/previews/goodmorningsm.mp3",
+        "spotify": "https://open.spotify.com/track/2g7gviEeJr6pyxO7G35EWQ",
+        "votes": 0
+    },
+
+    {
+        "title": "Teriyaki",
+        "artist": "Middle Milk, Anna Timgren",
+        "cover": "musics/covers/teriyaki.jpeg",
+        "preview": "musics/previews/teriyaki.mp3",
+        "spotify": "https://open.spotify.com/track/4E6cwWJWZw2zWf7VFbH7wf",
+        "votes": 0
+    },
+
+    {
+        "title": "TopBrazil [Radio Edit]",
+        "artist": "Fischerspooner, Warren Fischer",
+        "cover": "musics/covers/topbrazil.jpeg",
+        "preview": "musics/previews/topbrazil.mp3",
+        "spotify": "https://open.spotify.com/track/4E6cwWJWZw2zWf7VFbH7wf",
+        "votes": 0
+    }
+]
