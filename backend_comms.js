@@ -38,6 +38,6 @@ async function signup(url,username,pswd){//regisztrálláss
         body:body
     })
 
-    login(url,username,pswd)
+    await login(url,username,pswd)
 }
 
