@@ -1,20 +1,37 @@
-const musicList = document.getElementById("music-list");
-const background = document.getElementById("background");
-const backgroundMusic = document.getElementById("background-music");
-const musicPlayer = document.getElementById("music-player");
-const playerGif = document.getElementById("player-gif");
-const loader = document.getElementById("loader");
+const musicList =
+    document.getElementById("music-list");
+
+const background =
+    document.getElementById("background");
+
+const backgroundMusic =
+    document.getElementById("background-music");
+
+const musicPlayer =
+    document.getElementById("music-player");
+
+const playerGif =
+    document.getElementById("player-gif");
+
+const loader =
+    document.getElementById("loader");
 
 
 // ============================================================
 // SETTINGS
 // ============================================================
 
+const API_BASE =
+    "https://musiccomp-api.ambrust-zoltan01.workers.dev";
+
+
 const DEFAULT_COVER =
     "musics/covers/default.png";
 
+
 const DEFAULT_BACKGROUND =
     "musics/default-bg.png";
+
 
 const VOTED_ICON =
     "musics/voted.png";
@@ -23,8 +40,10 @@ const VOTED_ICON =
 const NORMAL_VOLUME =
     0.0;
 
+
 const HOVER_VOLUME =
-    0.75;
+    75;
+
 
 const BACKGROUND_VOLUME =
     0.15;
@@ -33,8 +52,10 @@ const BACKGROUND_VOLUME =
 const BACKGROUND_FADE_OUT =
     650;
 
+
 const BACKGROUND_FADE_IN =
     900;
+
 
 const AUDIO_FADE_DURATION =
     650;
@@ -42,6 +63,7 @@ const AUDIO_FADE_DURATION =
 
 const PLAY_ANIMATION_DURATION =
     585;
+
 
 const PAUSE_ANIMATION_DURATION =
     585;
@@ -51,20 +73,52 @@ const PAUSE_ANIMATION_DURATION =
 // STATE
 // ============================================================
 
-let currentAudio =
-    null;
-
 let currentCard =
     null;
+
+
+let currentSong =
+    null;
+
 
 let backgroundMusicEnabled =
     false;
 
+
 let backgroundMusicFadeFrame =
     null;
 
+
 let backgroundChangeToken =
     0;
+
+
+// ============================================================
+// YOUTUBE STATE
+// ============================================================
+
+let youtubePlayer =
+    null;
+
+
+let youtubePlayerReady =
+    false;
+
+
+let youtubeApiReady =
+    false;
+
+
+let youtubeApiPromise =
+    null;
+
+
+let youtubePlayerPromise =
+    null;
+
+
+let youtubeCurrentVideoId =
+    null;
 
 
 // ============================================================
@@ -88,7 +142,9 @@ function clamp(
 }
 
 
-function sleep(ms) {
+function sleep(
+    ms
+) {
 
     return new Promise(
         resolve => {
@@ -115,12 +171,15 @@ function fadeAudio(
 ) {
 
     if (!audio) {
+
         return;
+
     }
 
 
     const startVolume =
         audio.volume;
+
 
     const difference =
         targetVolume -
@@ -128,7 +187,9 @@ function fadeAudio(
 
 
     if (
-        Math.abs(difference) <
+        Math.abs(
+            difference
+        ) <
         0.001
     ) {
 
@@ -136,6 +197,7 @@ function fadeAudio(
             targetVolume;
 
         return;
+
     }
 
 
@@ -168,7 +230,8 @@ function fadeAudio(
 
 
         if (
-            progress < 1
+            progress <
+            1
         ) {
 
             requestAnimationFrame(
@@ -202,7 +265,9 @@ function fadeBackgroundMusic(
 ) {
 
     if (!backgroundMusic) {
+
         return;
+
     }
 
 
@@ -215,17 +280,21 @@ function fadeBackgroundMusic(
             backgroundMusicFadeFrame
         );
 
+
         backgroundMusicFadeFrame =
             null;
+
     }
 
 
     const startVolume =
         backgroundMusic.volume;
 
+
     const difference =
         targetVolume -
         startVolume;
+
 
     const startTime =
         performance.now();
@@ -256,7 +325,8 @@ function fadeBackgroundMusic(
 
 
         if (
-            progress < 1
+            progress <
+            1
         ) {
 
             backgroundMusicFadeFrame =
@@ -268,6 +338,7 @@ function fadeBackgroundMusic(
 
             backgroundMusic.volume =
                 targetVolume;
+
 
             backgroundMusicFadeFrame =
                 null;
@@ -289,7 +360,9 @@ function fadeBackgroundMusic(
 // IMAGE PRELOAD
 // ============================================================
 
-function preloadImage(src) {
+function preloadImage(
+    src
+) {
 
     return new Promise(
         resolve => {
@@ -299,6 +372,7 @@ function preloadImage(src) {
                 resolve();
 
                 return;
+
             }
 
 
@@ -308,6 +382,7 @@ function preloadImage(src) {
 
             image.onload =
                 resolve;
+
 
             image.onerror =
                 resolve;
@@ -323,69 +398,7 @@ function preloadImage(src) {
 
 
 // ============================================================
-// AUDIO PRELOAD
-// ============================================================
-
-function preloadAudio(src) {
-
-    return new Promise(
-        resolve => {
-
-            if (!src) {
-
-                resolve();
-
-                return;
-            }
-
-
-            const audio =
-                new Audio();
-
-
-            audio.preload =
-                "auto";
-
-
-            const done =
-                () => {
-
-                    resolve();
-
-                };
-
-
-            audio.addEventListener(
-                "canplaythrough",
-                done,
-                {
-                    once: true
-                }
-            );
-
-
-            audio.addEventListener(
-                "error",
-                done,
-                {
-                    once: true
-                }
-            );
-
-
-            audio.src =
-                src;
-
-            audio.load();
-
-        }
-    );
-
-}
-
-
-// ============================================================
-// PRELOAD ASSETS
+// PRELOAD
 // ============================================================
 
 async function preloadAssets(
@@ -403,28 +416,17 @@ async function preloadAssets(
     ];
 
 
-    const audios =
-        [];
-
-
     for (
         const song
         of songs
     ) {
 
-        if (song.cover) {
+        if (
+            song.cover
+        ) {
 
             images.push(
                 song.cover
-            );
-
-        }
-
-
-        if (song.preview) {
-
-            audios.push(
-                song.preview
             );
 
         }
@@ -440,25 +442,11 @@ async function preloadAssets(
         ];
 
 
-    const uniqueAudios =
-        [
-            ...new Set(
-                audios
-            )
-        ];
-
-
-    await Promise.all([
-
-        ...uniqueImages.map(
+    await Promise.all(
+        uniqueImages.map(
             preloadImage
-        ),
-
-        ...uniqueAudios.map(
-            preloadAudio
         )
-
-    ]);
+    );
 
 }
 
@@ -550,206 +538,542 @@ function resetBackground() {
 
 
 // ============================================================
-// CARD AUDIO
+// YOUTUBE API READY
 // ============================================================
 
-async function startCardAudio(
-    card
-) {
+window.onYouTubeIframeAPIReady =
+    function () {
 
-    const audio =
-        card.querySelector(
-            ".card-audio"
+        console.log(
+            "YouTube IFrame API is ready."
         );
 
 
-    if (!audio) {
+        youtubeApiReady =
+            true;
 
-        return;
-
-    }
-
-
-    /*
-        If another card is currently audible,
-        fade it to zero.
-
-        IMPORTANT:
-        We DO NOT pause it.
-        It keeps playing silently.
-    */
-    if (
-        currentAudio &&
-        currentAudio !== audio
-    ) {
-
-        fadeAudio(
-            currentAudio,
-            NORMAL_VOLUME,
-            AUDIO_FADE_DURATION
-        );
-
-    }
-
-
-    currentAudio =
-        audio;
-
-    currentCard =
-        card;
-
-
-    /*
-        If the preview already finished,
-        restart it from the beginning.
-    */
-    if (
-        audio.ended
-    ) {
-
-        audio.currentTime =
-            0;
-
-    }
-
-
-    /*
-        If for some reason it is paused,
-        start it.
-
-        Normally this only happens on the
-        first hover.
-    */
-    if (
-        audio.paused
-    ) {
-
-        try {
-
-            await audio.play();
-
-        } catch (error) {
-
-            console.warn(
-                "Could not play preview:",
-                error
-            );
-
-            return;
-
-        }
-
-    }
-
-
-    /*
-        Bring the currently hovered card back
-        to audible volume.
-    */
-    fadeAudio(
-        audio,
-        HOVER_VOLUME,
-        AUDIO_FADE_DURATION
-    );
-
-}
+    };
 
 
 // ============================================================
-// STOP / MUTE CARD AUDIO
+// WAIT FOR YOUTUBE API
 // ============================================================
 
-function stopCardAudio(
-    card
-) {
+function waitForYouTubeAPI() {
 
-    const audio =
-        card.querySelector(
-            ".card-audio"
-        );
+    if (
+        youtubeApiReady &&
+        window.YT &&
+        window.YT.Player
+    ) {
 
-
-    if (!audio) {
-
-        return;
+        return Promise.resolve();
 
     }
 
 
-    /*
-        IMPORTANT:
-
-        Do NOT pause.
-        Do NOT reset currentTime.
-
-        The song continues playing in the
-        background at zero volume.
-    */
-    fadeAudio(
-        audio,
-        NORMAL_VOLUME,
-        AUDIO_FADE_DURATION
-    );
-
-
-    /*
-        Do not clear currentAudio here.
-
-        The card can still be the currently
-        tracked audio even while its volume
-        is zero.
-    */
-
-}
-
-
-// ============================================================
-// CARD AUDIO ENDED
-// ============================================================
-
-function handleCardAudioEnded(
-    card,
-    audio
-) {
-
-    /*
-        If the mouse is STILL over this card,
-        immediately restart the preview.
-    */
     if (
-        card.matches(":hover")
+        window.YT &&
+        window.YT.Player
     ) {
 
-        audio.currentTime =
-            0;
+        youtubeApiReady =
+            true;
 
 
-        audio.volume =
-            NORMAL_VOLUME;
+        return Promise.resolve();
+
+    }
 
 
-        audio.play()
-            .then(
-                () => {
+    if (
+        youtubeApiPromise
+    ) {
 
-                    fadeAudio(
-                        audio,
-                        HOVER_VOLUME,
-                        AUDIO_FADE_DURATION
+        return youtubeApiPromise;
+
+    }
+
+
+    youtubeApiPromise =
+        new Promise(
+            (
+                resolve,
+                reject
+            ) => {
+
+                let attempts =
+                    0;
+
+
+                const timer =
+                    setInterval(
+                        () => {
+
+                            attempts++;
+
+
+                            if (
+                                window.YT &&
+                                window.YT.Player
+                            ) {
+
+                                clearInterval(
+                                    timer
+                                );
+
+
+                                youtubeApiReady =
+                                    true;
+
+
+                                console.log(
+                                    "YouTube API detected."
+                                );
+
+
+                                resolve();
+
+                                return;
+
+                            }
+
+
+                            if (
+                                attempts >=
+                                400
+                            ) {
+
+                                clearInterval(
+                                    timer
+                                );
+
+
+                                reject(
+                                    new Error(
+                                        "YouTube IFrame API did not load."
+                                    )
+                                );
+
+                            }
+
+                        },
+                        50
                     );
 
-                }
-            )
-            .catch(
-                error => {
+            }
+        );
 
-                    console.warn(
-                        "Could not restart preview:",
+
+    return youtubeApiPromise;
+
+}
+
+
+// ============================================================
+// CREATE PLAYER
+// ============================================================
+
+async function createYouTubePlayer() {
+
+    if (
+        youtubePlayer &&
+        youtubePlayerReady
+    ) {
+
+        return youtubePlayer;
+
+    }
+
+
+    if (
+        youtubePlayerPromise
+    ) {
+
+        return youtubePlayerPromise;
+
+    }
+
+
+    youtubePlayerPromise =
+        new Promise(
+            async (
+                resolve,
+                reject
+            ) => {
+
+                try {
+
+                    await waitForYouTubeAPI();
+
+
+                    const wrapper =
+                        document.getElementById(
+                            "youtube-preview-wrapper"
+                        );
+
+
+                    if (
+                        !wrapper
+                    ) {
+
+                        throw new Error(
+                            "youtube-preview-wrapper not found."
+                        );
+
+                    }
+
+
+                    /*
+                        Clear previous contents.
+                    */
+
+                    wrapper.innerHTML =
+                        "";
+
+
+                    /*
+                        Create a unique player element.
+                    */
+
+                    const playerElement =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    playerElement.id =
+                        "youtube-preview-player";
+
+
+                    wrapper.appendChild(
+                        playerElement
+                    );
+
+
+                    console.log(
+                        "Creating YouTube player..."
+                    );
+
+
+                    /*
+                        IMPORTANT:
+
+                        origin is explicitly passed to
+                        the IFrame API.
+                    */
+
+                    new YT.Player(
+                        "youtube-preview-player",
+                        {
+
+                            width:
+                                "480",
+
+                            height:
+                                "270",
+
+                            videoId:
+                                "",
+
+                            playerVars: {
+
+                                autoplay:
+                                    0,
+
+                                controls:
+                                    1,
+
+                                disablekb:
+                                    0,
+
+                                playsinline:
+                                    1,
+
+                                rel:
+                                    0,
+
+                                origin:
+                                    window.location.origin
+
+                            },
+
+
+                            events: {
+
+                                onReady:
+                                    event => {
+
+                                        console.log(
+                                            "YouTube player ready."
+                                        );
+
+
+                                        youtubePlayer =
+                                            event.target;
+
+
+                                        youtubePlayerReady =
+                                            true;
+
+
+                                        resolve(
+                                            youtubePlayer
+                                        );
+
+                                    },
+
+
+                                onStateChange:
+                                    event => {
+
+                                        console.log(
+                                            "YouTube player state:",
+                                            event.data
+                                        );
+
+                                    },
+
+
+                                onError:
+                                    event => {
+
+                                        console.error(
+                                            "YouTube player error:",
+                                            event.data
+                                        );
+
+                                    }
+
+                            }
+
+                        }
+                    );
+
+                } catch (
+                    error
+                ) {
+
+                    youtubePlayerPromise =
+                        null;
+
+
+                    reject(
                         error
                     );
 
                 }
-            );
+
+            }
+        );
+
+
+    return youtubePlayerPromise;
+
+}
+
+
+// ============================================================
+// SEARCH YOUTUBE
+// ============================================================
+
+async function searchYouTube(
+    song
+) {
+
+    const query =
+        `${song.artist} ${song.title}`;
+
+
+    console.log(
+        "Searching YouTube:",
+        query
+    );
+
+
+    const response =
+        await fetch(
+            `${API_BASE}/api/youtube?q=${
+                encodeURIComponent(
+                    query
+                )
+            }`
+        );
+
+
+    if (
+        !response.ok
+    ) {
+
+        throw new Error(
+            `YouTube search failed: ${
+                response.status
+            }`
+        );
+
+    }
+
+
+    const data =
+        await response.json();
+
+
+    if (
+        !data ||
+        !Array.isArray(
+            data.results
+        )
+    ) {
+
+        return null;
+
+    }
+
+
+    if (
+        data.results.length ===
+        0
+    ) {
+
+        return null;
+
+    }
+
+
+    const result =
+        data.results.find(
+            item =>
+                item.videoId
+        );
+
+
+    if (
+        !result
+    ) {
+
+        return null;
+
+    }
+
+
+    console.log(
+        "YouTube result:",
+        result.videoId
+    );
+
+
+    return result.videoId;
+
+}
+
+
+// ============================================================
+// LOAD YOUTUBE SONG
+// ============================================================
+
+async function loadYouTubeSong(
+    song
+) {
+
+    if (
+        !song.youtubeId
+    ) {
+
+        return false;
+
+    }
+
+
+    const player =
+        await createYouTubePlayer();
+
+
+    if (
+        !player ||
+        !youtubePlayerReady
+    ) {
+
+        throw new Error(
+            "YouTube player is not ready."
+        );
+
+    }
+
+
+    console.log(
+        "Loading YouTube video:",
+        song.youtubeId
+    );
+
+
+    youtubeCurrentVideoId =
+        song.youtubeId;
+
+
+    player.loadVideoById({
+        videoId:
+            song.youtubeId,
+
+        startSeconds:
+            0
+    });
+
+
+    /*
+        Give YouTube a short moment to accept
+        the newly loaded video before calling
+        playVideo().
+    */
+
+    await sleep(
+        100
+    );
+
+
+    player.setVolume(
+        HOVER_VOLUME
+    );
+
+
+    player.playVideo();
+
+
+    return true;
+
+}
+
+
+// ============================================================
+// PLAY YOUTUBE
+// ============================================================
+
+async function playYouTubeSong(
+    song
+) {
+
+    if (
+        !song.youtubeId
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        await loadYouTubeSong(
+            song
+        );
+
+    } catch (
+        error
+    ) {
+
+        console.error(
+            "Could not play YouTube:",
+            error
+        );
 
     }
 
@@ -757,7 +1081,75 @@ function handleCardAudioEnded(
 
 
 // ============================================================
-// CARD HOVER
+// PAUSE YOUTUBE
+// ============================================================
+
+function pauseYouTube() {
+
+    if (
+        !youtubePlayer ||
+        !youtubePlayerReady
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        youtubePlayer.pauseVideo();
+
+    } catch (
+        error
+    ) {
+
+        console.warn(
+            "Could not pause YouTube:",
+            error
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// STOP YOUTUBE
+// ============================================================
+
+function stopYouTube() {
+
+    if (
+        !youtubePlayer ||
+        !youtubePlayerReady
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        youtubePlayer.stopVideo();
+
+    } catch (
+        error
+    ) {
+
+        console.warn(
+            "Could not stop YouTube:",
+            error
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// CARD ENTER
 // ============================================================
 
 async function handleCardEnter(
@@ -765,72 +1157,119 @@ async function handleCardEnter(
     song
 ) {
 
-    /*
-        Start background rotation.
-    */
+    currentCard =
+        card;
+
+
+    currentSong =
+        song;
+
+
     background.classList.add(
         "card-hover"
     );
 
 
-    /*
-        Change page background.
-    */
     await changeBackground(
         song.cover ||
         DEFAULT_BACKGROUND
     );
 
 
-    /*
-        Background music fades out.
-    */
     fadeBackgroundMusic(
         0,
         BACKGROUND_FADE_OUT
     );
 
 
-    /*
-        Start/resume the card audio.
+    try {
 
-        If it already played silently after leaving
-        the card, it continues.
+        /*
+            Find the YouTube video once.
+        */
 
-        If it already ended, it starts again.
-    */
-    await startCardAudio(
-        card
-    );
+        if (
+            !song.youtubeId
+        ) {
+
+            song.youtubeId =
+                await searchYouTube(
+                    song
+                );
+
+        }
+
+
+        /*
+            Mouse may have moved to another
+            card while search was running.
+        */
+
+        if (
+            currentCard !==
+            card
+        ) {
+
+            return;
+
+        }
+
+
+        if (
+            song.youtubeId
+        ) {
+
+            await playYouTubeSong(
+                song
+            );
+
+        }
+
+    } catch (
+        error
+    ) {
+
+        console.error(
+            "Could not load YouTube:",
+            error
+        );
+
+    }
 
 }
 
+
+// ============================================================
+// CARD LEAVE
+// ============================================================
 
 function handleCardLeave(
     card
 ) {
 
-    /*
-        Stop background rotation,
-        but keep the current rotation position.
-    */
+    if (
+        currentCard ===
+        card
+    ) {
+
+        pauseYouTube();
+
+
+        currentCard =
+            null;
+
+
+        currentSong =
+            null;
+
+    }
+
+
     background.classList.remove(
         "card-hover"
     );
 
 
-    /*
-        Keep audio playing,
-        but make it silent.
-    */
-    stopCardAudio(
-        card
-    );
-
-
-    /*
-        Background music comes back.
-    */
     fadeBackgroundMusic(
         backgroundMusicEnabled
             ? BACKGROUND_VOLUME
@@ -839,16 +1278,13 @@ function handleCardLeave(
     );
 
 
-    /*
-        Restore default background.
-    */
     resetBackground();
 
 }
 
 
 // ============================================================
-// VOTE
+// VOTE KEY
 // ============================================================
 
 function getVoteKey(
@@ -857,6 +1293,7 @@ function getVoteKey(
 ) {
 
     return `musiccomp-vote-${
+        song.spotifyId ||
         song.spotify ||
         index
     }`;
@@ -864,12 +1301,18 @@ function getVoteKey(
 }
 
 
+// ============================================================
+// UPDATE VOTE
+// ============================================================
+
 function updateVoteButton(
     button,
     voted
 ) {
 
-    if (voted) {
+    if (
+        voted
+    ) {
 
         button.classList.add(
             "voted"
@@ -899,6 +1342,10 @@ function updateVoteButton(
 }
 
 
+// ============================================================
+// SETUP VOTE
+// ============================================================
+
 function setupVoteButton(
     button,
     song,
@@ -924,7 +1371,9 @@ function setupVoteButton(
     );
 
 
-    if (savedVote) {
+    if (
+        savedVote
+    ) {
 
         button
             .closest(
@@ -958,7 +1407,9 @@ function setupVoteButton(
 
             localStorage.setItem(
                 voteKey,
-                newState
+                String(
+                    newState
+                )
             );
 
 
@@ -974,7 +1425,9 @@ function setupVoteButton(
                 );
 
 
-            if (card) {
+            if (
+                card
+            ) {
 
                 card.classList.toggle(
                     "has-vote",
@@ -1048,9 +1501,6 @@ function createCard(
         "#";
 
 
-    /*
-        Card blurred background image.
-    */
     card.style.setProperty(
         "--card-image",
         `url("${cover}")`
@@ -1101,60 +1551,6 @@ function createCard(
     coverElement.appendChild(
         votedPill
     );
-
-
-    // ========================================================
-    // AUDIO
-    // ========================================================
-
-    if (song.preview) {
-
-        const audio =
-            document.createElement(
-                "audio"
-            );
-
-
-        audio.className =
-            "card-audio";
-
-
-        audio.src =
-            song.preview;
-
-
-        audio.preload =
-            "auto";
-
-
-        audio.volume =
-            NORMAL_VOLUME;
-
-
-        /*
-            When the song reaches the end:
-
-            - hovered -> restart
-            - not hovered -> stay ended
-        */
-        audio.addEventListener(
-            "ended",
-            () => {
-
-                handleCardAudioEnded(
-                    card,
-                    audio
-                );
-
-            }
-        );
-
-
-        card.appendChild(
-            audio
-        );
-
-    }
 
 
     // ========================================================
@@ -1221,7 +1617,9 @@ function createCard(
     // DESCRIPTION
     // ========================================================
 
-    if (description) {
+    if (
+        description
+    ) {
 
         const descriptionElement =
             document.createElement(
@@ -1264,7 +1662,9 @@ function createCard(
             "meta";
 
 
-        if (album) {
+        if (
+            album
+        ) {
 
             const element =
                 document.createElement(
@@ -1283,7 +1683,9 @@ function createCard(
         }
 
 
-        if (year) {
+        if (
+            year
+        ) {
 
             const element =
                 document.createElement(
@@ -1302,7 +1704,9 @@ function createCard(
         }
 
 
-        if (genre) {
+        if (
+            genre
+        ) {
 
             const element =
                 document.createElement(
@@ -1343,7 +1747,7 @@ function createCard(
 
 
     // ========================================================
-    // SPOTIFY
+    // SPOTIFY BUTTON
     // ========================================================
 
     const spotifyButton =
@@ -1378,7 +1782,7 @@ function createCard(
 
 
     // ========================================================
-    // VOTE
+    // VOTE BUTTON
     // ========================================================
 
     const voteButton =
@@ -1404,14 +1808,14 @@ function createCard(
     );
 
 
-    // ========================================================
-    // APPEND
-    // ========================================================
-
     info.appendChild(
         actions
     );
 
+
+    // ========================================================
+    // APPEND
+    // ========================================================
 
     card.appendChild(
         coverElement
@@ -1429,7 +1833,7 @@ function createCard(
 
 
     // ========================================================
-    // VOTE STATE
+    // VOTE SETUP
     // ========================================================
 
     setupVoteButton(
@@ -1481,23 +1885,81 @@ async function loadSongs() {
 
     try {
 
+        console.log(
+            "Loading Spotify playlist..."
+        );
+
+
         const response =
             await fetch(
-                "songs.json"
+                `${API_BASE}/api/songs`
             );
 
 
-        if (!response.ok) {
+        if (
+            !response.ok
+        ) {
+
+            let details =
+                "";
+
+
+            try {
+
+                const errorData =
+                    await response.json();
+
+
+                details =
+                    errorData.error ||
+                    errorData.details ||
+                    "";
+
+            } catch {
+
+                // Ignore parse error.
+
+            }
+
 
             throw new Error(
-                `HTTP ${response.status}`
+                `HTTP ${
+                    response.status
+                }${
+                    details
+                        ? `: ${details}`
+                        : ""
+                }`
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !data ||
+            !Array.isArray(
+                data.songs
+            )
+        ) {
+
+            throw new Error(
+                "Invalid Spotify response."
             );
 
         }
 
 
         const songs =
-            await response.json();
+            data.songs;
+
+
+        console.log(
+            `Loaded ${songs.length} songs from Spotify.`
+        );
 
 
         // ----------------------------------------------------
@@ -1510,7 +1972,7 @@ async function loadSongs() {
 
 
         // ----------------------------------------------------
-        // CARDS
+        // CREATE CARDS
         // ----------------------------------------------------
 
         musicList.innerHTML =
@@ -1552,7 +2014,9 @@ async function loadSongs() {
         );
 
 
-    } catch (error) {
+    } catch (
+        error
+    ) {
 
         console.error(
             "Failed to load songs:",
@@ -1571,7 +2035,9 @@ async function loadSongs() {
             );
 
 
-        if (loaderText) {
+        if (
+            loaderText
+        ) {
 
             loaderText.textContent =
                 "FAILED TO LOAD SONGS";
@@ -1584,7 +2050,7 @@ async function loadSongs() {
 
 
 // ============================================================
-// BACKGROUND MUSIC PLAYER
+// BACKGROUND MUSIC
 // ============================================================
 
 async function playBackgroundMusic() {
@@ -1613,10 +2079,6 @@ async function playBackgroundMusic() {
         );
 
 
-        // ----------------------------------------------------
-        // PLAY -> PAUSE GIF
-        // ----------------------------------------------------
-
         playerGif.src =
             "musics/pause-play.gif";
 
@@ -1638,7 +2100,9 @@ async function playBackgroundMusic() {
         );
 
 
-    } catch (error) {
+    } catch (
+        error
+    ) {
 
         console.warn(
             "Could not play background music:",
@@ -1649,6 +2113,10 @@ async function playBackgroundMusic() {
 
 }
 
+
+// ============================================================
+// PAUSE BACKGROUND MUSIC
+// ============================================================
 
 function pauseBackgroundMusic() {
 
@@ -1666,10 +2134,6 @@ function pauseBackgroundMusic() {
         BACKGROUND_FADE_OUT
     );
 
-
-    // --------------------------------------------------------
-    // PAUSE -> PLAY GIF
-    // --------------------------------------------------------
 
     playerGif.src =
         "musics/play-pause.gif";
@@ -1711,7 +2175,7 @@ function pauseBackgroundMusic() {
 
 
 // ============================================================
-// TOGGLE MUSIC
+// TOGGLE BACKGROUND MUSIC
 // ============================================================
 
 async function toggleBackgroundMusic() {
@@ -1768,7 +2232,8 @@ musicList.addEventListener(
 
     },
     {
-        passive: false
+        passive:
+            false
     }
 );
 
@@ -1782,7 +2247,7 @@ background.style.backgroundImage =
 
 
 backgroundMusic.volume =
-    0;
+    NORMAL_VOLUME;
 
 
 backgroundMusicEnabled =
