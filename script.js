@@ -125,7 +125,7 @@ async function setupProfileUsername() {
 
     try {
         if (typeof window.get_username === "function") {
-            const raw = window.get_username();
+            const raw = window.get_username(SERVER_URL);
             const resolved = isPromise(raw) ? await raw : raw;
             const username = (resolved ?? "").toString().trim();
 
@@ -629,12 +629,17 @@ async function uploadFile(file) {
         const xhr = new XMLHttpRequest();
 
         setUploadProgress(0, true, "Feltöltés...");
+        const card=document.getElementById(file.name).querySelector("div > div.details")
+        const description=card.querySelector(".comment").value
+        const game=card.querySelector(".game").value
+
 
         xhr.open("UPLOAD", SERVER_URL, true);
         xhr.setRequestHeader("Content-Length", String(file.size));
         xhr.setRequestHeader("Content-Type", "application/octet-stream");
         xhr.setRequestHeader("filename", file.name);
         xhr.setRequestHeader(AUTH_HEADER_NAME, token);
+        xhr.setRequestHeader("description",toString({"description":description,"game":game}))
 
         xhr.upload.addEventListener("progress", (event) => {
             if (!event.lengthComputable) {
@@ -695,7 +700,7 @@ function escapeHtml(value) {
 function createClipCard(file) {
     const card = document.createElement("div");
     card.className = "clip-card collapsed";
-
+    card.id=file.name;
     const videoURL = URL.createObjectURL(file);
     const safeName = escapeHtml(file.name);
 
@@ -810,12 +815,7 @@ async function handleFiles(files) {
 
         createClipCard(file);
 
-        try {
-            await uploadFile(file);
-        } catch (error) {
-            console.error(error);
-            break;
-        }
+        
     }
 }
 
@@ -863,12 +863,21 @@ function formatSize(bytes) {
     if (fileInput && dropZone && clipContainer && submitButton) {
         submitButton.addEventListener("click", () => {
             const hasSelectedFiles = fileInput.files && fileInput.files.length > 0;
-
+            let failed=false
             if (!hasSelectedFiles) {
                 return;
             }
+            for (e in fileInput.files){
 
-            resetSubmitPage();
+                try {
+                    await uploadFile(file);
+                } catch (error) {
+                    console.error(error);
+                    failed=true
+                    break;
+                }
+            }
+            if (!failed){resetSubmitPage()};
             showUploadSuccess("Sikeres beküldés");
         });
 

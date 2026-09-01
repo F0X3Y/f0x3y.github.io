@@ -38,6 +38,16 @@ async function signup(url,username,pswd){//regisztrálláss
         body:body
     })
 
-    login(url,username,pswd)
+    await login(url,username,pswd)
 }
 
+async function get_username(url) {
+    result=await fetch(url+"/username",{method:"GET",
+        headers:{"token":get_token()}
+    })
+    if (result.status==200){
+        return await result.text()
+    }
+
+    return "Felhasználó"
+}
