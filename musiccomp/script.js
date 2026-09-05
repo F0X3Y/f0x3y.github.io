@@ -118,6 +118,34 @@ let soundcloudPlayToken =
 
 
 // ============================================================
+// YOUTUBE STATE
+// ============================================================
+
+let youtubePlayer =
+    null;
+
+
+let youtubePlayerReady =
+    false;
+
+
+let youtubeApiReady =
+    false;
+
+
+let youtubeApiPromise =
+    null;
+
+
+let youtubePlayerPromise =
+    null;
+
+
+let youtubeCurrentVideoId =
+    null;
+
+
+// ============================================================
 // HELPERS
 // ============================================================
 
@@ -534,30 +562,355 @@ function resetBackground() {
 
 
 // ============================================================
-// SEARCH SOUNDCLOUD
+// YOUTUBE API READY
+// ============================================================
+
+window.onYouTubeIframeAPIReady =
+    function () {
+
+        console.log(
+            "YouTube IFrame API is ready."
+        );
+
+
+        youtubeApiReady =
+            true;
+
+    };
+
+
+// ============================================================
+// WAIT FOR YOUTUBE API
+// ============================================================
+
+function waitForYouTubeAPI() {
+
+    if (
+        youtubeApiReady &&
+        window.YT &&
+        window.YT.Player
+    ) {
+
+        return Promise.resolve();
+
+    }
+
+
+    if (
+        window.YT &&
+        window.YT.Player
+    ) {
+
+        youtubeApiReady =
+            true;
+
+
+        return Promise.resolve();
+
+    }
+
+
+    if (
+        youtubeApiPromise
+    ) {
+
+        return youtubeApiPromise;
+
+    }
+
+
+    youtubeApiPromise =
+        new Promise(
+            (
+                resolve,
+                reject
+            ) => {
+
+                let attempts =
+                    0;
+
+
+                const timer =
+                    setInterval(
+                        () => {
+
+                            attempts++;
+
+
+                            if (
+                                window.YT &&
+                                window.YT.Player
+                            ) {
+
+                                clearInterval(
+                                    timer
+                                );
+
+
+                                youtubeApiReady =
+                                    true;
+
+
+                                console.log(
+                                    "YouTube API detected."
+                                );
+
+
+                                resolve();
+
+                                return;
+
+                            }
+
+
+                            if (
+                                attempts >=
+                                400
+                            ) {
+
+                                clearInterval(
+                                    timer
+                                );
+
+
+                                reject(
+                                    new Error(
+                                        "YouTube IFrame API did not load."
+                                    )
+                                );
+
+                            }
+
+                        },
+                        50
+                    );
+
+            }
+        );
+
+
+    return youtubeApiPromise;
+
+}
+
+
+// ============================================================
+// CREATE YOUTUBE PLAYER
+// ============================================================
+
+async function createYouTubePlayer() {
+
+    if (
+        youtubePlayer &&
+        youtubePlayerReady
+    ) {
+
+        return youtubePlayer;
+
+    }
+
+
+    if (
+        youtubePlayerPromise
+    ) {
+
+        return youtubePlayerPromise;
+
+    }
+
+
+    youtubePlayerPromise =
+        new Promise(
+            async (
+                resolve,
+                reject
+            ) => {
+
+                try {
+
+                    await waitForYouTubeAPI();
+
+
+                    const wrapper =
+                        document.getElementById(
+                            "youtube-preview-wrapper"
+                        );
+
+
+                    if (
+                        !wrapper
+                    ) {
+
+                        throw new Error(
+                            "youtube-preview-wrapper not found."
+                        );
+
+                    }
+
+
+                    wrapper.innerHTML =
+                        "";
+
+
+                    const playerElement =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    playerElement.id =
+                        "youtube-preview-player";
+
+
+                    wrapper.appendChild(
+                        playerElement
+                    );
+
+
+                    console.log(
+                        "Creating YouTube player..."
+                    );
+
+
+                    new YT.Player(
+                        "youtube-preview-player",
+                        {
+
+                            width:
+                                "480",
+
+                            height:
+                                "270",
+
+                            videoId:
+                                "",
+
+                            playerVars: {
+
+                                autoplay:
+                                    0,
+
+                                controls:
+                                    1,
+
+                                disablekb:
+                                    0,
+
+                                playsinline:
+                                    1,
+
+                                rel:
+                                    0,
+
+                                origin:
+                                    window.location.origin
+
+                            },
+
+
+                            events: {
+
+                                onReady:
+                                    event => {
+
+                                        console.log(
+                                            "YouTube player ready."
+                                        );
+
+
+                                        youtubePlayer =
+                                            event.target;
+
+
+                                        youtubePlayerReady =
+                                            true;
+
+
+                                        resolve(
+                                            youtubePlayer
+                                        );
+
+                                    },
+
+
+                                onStateChange:
+                                    event => {
+
+                                        console.log(
+                                            "YouTube player state:",
+                                            event.data
+                                        );
+
+                                    },
+
+
+                                onError:
+                                    event => {
+
+                                        console.error(
+                                            "YouTube player error:",
+                                            event.data
+                                        );
+
+                                    }
+
+                            }
+
+                        }
+                    );
+
+                } catch (
+                    error
+                ) {
+
+                    youtubePlayerPromise =
+                        null;
+
+
+                    reject(
+                        error
+                    );
+
+                }
+
+            }
+        );
+
+
+    return youtubePlayerPromise;
+
+}
+
+
+// ============================================================
+// SOUNDCLOUD SEARCH
 // ============================================================
 
 async function searchSoundCloud(
     song
 ) {
 
-    const query =
-        `${song.artist} ${song.title}`;
+    const params =
+        new URLSearchParams({
+
+            artist:
+                song.artist || "",
+
+            title:
+                song.title || ""
+
+        });
 
 
     console.log(
-        "Searching SoundCloud:",
-        query
+        "Smart SoundCloud search:",
+        `${song.artist} ${song.title}`
     );
 
 
     const response =
         await fetch(
-            `${API_BASE}/api/soundcloud?q=${
-                encodeURIComponent(
-                    query
-                )
-            }`
+            `${API_BASE}/api/soundcloud?${params.toString()}`
         );
 
 
@@ -565,9 +918,35 @@ async function searchSoundCloud(
         !response.ok
     ) {
 
+        let details =
+            "";
+
+
+        try {
+
+            const data =
+                await response.json();
+
+
+            details =
+                data.details ||
+                data.error ||
+                "";
+
+        } catch {
+
+            // Ignore.
+
+        }
+
+
         throw new Error(
             `SoundCloud search failed: ${
                 response.status
+            }${
+                details
+                    ? `: ${details}`
+                    : ""
             }`
         );
 
@@ -580,37 +959,15 @@ async function searchSoundCloud(
 
     if (
         !data ||
-        !Array.isArray(
-            data.results
-        )
+        !data.matched ||
+        !data.result
     ) {
 
-        return null;
-
-    }
-
-
-    if (
-        data.results.length ===
-        0
-    ) {
-
-        return null;
-
-    }
-
-
-    const result =
-        data.results.find(
-            item =>
-                item.urn ||
-                item.id
+        console.log(
+            "No sufficiently good SoundCloud match.",
+            data?.bestCandidate
         );
 
-
-    if (
-        !result
-    ) {
 
         return null;
 
@@ -618,24 +975,36 @@ async function searchSoundCloud(
 
 
     console.log(
-        "SoundCloud result:",
-        result
+        "Selected SoundCloud track:",
+        data.result
     );
 
 
     return {
 
         id:
-            result.id ??
+            data.result.id ??
             null,
 
         urn:
-            result.urn ??
+            data.result.urn ??
             null,
 
+        title:
+            data.result.title ??
+            "",
+
+        artist:
+            data.result.artist ??
+            "",
+
         permalink:
-            result.permalink ??
-            null
+            data.result.permalink ??
+            null,
+
+        score:
+            data.result.score ??
+            0
 
     };
 
@@ -692,7 +1061,7 @@ async function getSoundCloudStreamUrl(
 
         } catch {
 
-            // Ignore JSON errors.
+            // Ignore.
 
         }
 
@@ -741,8 +1110,7 @@ async function loadSoundCloudSong(
 ) {
 
     if (
-        !song.soundcloudId &&
-        !song.soundcloudUrn
+        !song.soundcloudId
     ) {
 
         return false;
@@ -750,21 +1118,11 @@ async function loadSoundCloudSong(
     }
 
 
-    const trackId =
-        song.soundcloudUrn ||
-        song.soundcloudId;
-
-
     const streamUrl =
         await getSoundCloudStreamUrl(
-            trackId
+            song.soundcloudId
         );
 
-
-    /*
-        The mouse may have moved to another
-        card while the request was running.
-    */
 
     if (
         token !==
@@ -777,7 +1135,7 @@ async function loadSoundCloudSong(
 
 
     soundcloudCurrentTrackId =
-        trackId;
+        song.soundcloudId;
 
 
     soundcloudAudio.pause();
@@ -799,9 +1157,10 @@ async function loadSoundCloudSong(
 
         await soundcloudAudio.play();
 
+
         console.log(
             "SoundCloud playback started:",
-            trackId
+            song.soundcloudId
         );
 
 
@@ -859,6 +1218,272 @@ function stopSoundCloud() {
 
 
 // ============================================================
+// YOUTUBE FALLBACK SEARCH
+// ============================================================
+
+async function searchYouTubeFallback(
+    song
+) {
+
+    const params =
+        new URLSearchParams({
+
+            artist:
+                song.artist || "",
+
+            title:
+                song.title || ""
+
+        });
+
+
+    console.log(
+        "Falling back to YouTube:",
+        `${song.artist} ${song.title}`
+    );
+
+
+    const response =
+        await fetch(
+            `${API_BASE}/api/youtube?${params.toString()}`
+        );
+
+
+    if (
+        !response.ok
+    ) {
+
+        let details =
+            "";
+
+
+        try {
+
+            const data =
+                await response.json();
+
+
+            details =
+                data.details ||
+                data.error ||
+                "";
+
+        } catch {
+
+            // Ignore.
+
+        }
+
+
+        throw new Error(
+            `YouTube fallback search failed: ${
+                response.status
+            }${
+                details
+                    ? `: ${details}`
+                    : ""
+            }`
+        );
+
+    }
+
+
+    const data =
+        await response.json();
+
+
+    if (
+        !data ||
+        !Array.isArray(
+            data.results
+        )
+    ) {
+
+        return null;
+
+    }
+
+
+    const result =
+        data.results.find(
+            item =>
+                item.videoId
+        );
+
+
+    if (
+        !result
+    ) {
+
+        return null;
+
+    }
+
+
+    console.log(
+        "YouTube fallback result:",
+        result.videoId,
+        result.title,
+        result.score
+    );
+
+
+    return result.videoId;
+
+}
+
+
+// ============================================================
+// PLAY YOUTUBE FALLBACK
+// ============================================================
+
+async function playYouTubeFallback(
+    song
+) {
+
+    const videoId =
+        await searchYouTubeFallback(
+            song
+        );
+
+
+    if (
+        !videoId
+    ) {
+
+        console.warn(
+            "No YouTube fallback result."
+        );
+
+
+        return false;
+
+    }
+
+
+    const player =
+        await createYouTubePlayer();
+
+
+    if (
+        !player ||
+        !youtubePlayerReady
+    ) {
+
+        throw new Error(
+            "YouTube player is not ready."
+        );
+
+    }
+
+
+    youtubeCurrentVideoId =
+        videoId;
+
+
+    player.loadVideoById({
+
+        videoId,
+
+        startSeconds:
+            0
+
+    });
+
+
+    await sleep(
+        100
+    );
+
+
+    player.setVolume(
+        HOVER_VOLUME
+    );
+
+
+    player.playVideo();
+
+
+    console.log(
+        "YouTube fallback playback started:",
+        videoId
+    );
+
+
+    return true;
+
+}
+
+
+// ============================================================
+// PAUSE YOUTUBE
+// ============================================================
+
+function pauseYouTube() {
+
+    if (
+        !youtubePlayer ||
+        !youtubePlayerReady
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        youtubePlayer.pauseVideo();
+
+    } catch (
+        error
+    ) {
+
+        console.warn(
+            "Could not pause YouTube:",
+            error
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// STOP YOUTUBE
+// ============================================================
+
+function stopYouTube() {
+
+    if (
+        !youtubePlayer ||
+        !youtubePlayerReady
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        youtubePlayer.stopVideo();
+
+    } catch (
+        error
+    ) {
+
+        console.warn(
+            "Could not stop YouTube:",
+            error
+        );
+
+    }
+
+}
+
+
+// ============================================================
 // CARD ENTER
 // ============================================================
 
@@ -896,11 +1521,6 @@ async function handleCardEnter(
     );
 
 
-    /*
-        The mouse may have moved away
-        while the background was loading.
-    */
-
     if (
         currentCard !==
         card ||
@@ -913,15 +1533,19 @@ async function handleCardEnter(
     }
 
 
+    // ========================================================
+    // SOUNDCLOUD FIRST
+    // ========================================================
+
     try {
 
         /*
-            Search SoundCloud only once.
+            Search SoundCloud only once
+            for this song.
         */
 
         if (
-            !song.soundcloudId &&
-            !song.soundcloudUrn
+            !song.soundcloudId
         ) {
 
             const result =
@@ -945,10 +1569,49 @@ async function handleCardEnter(
         }
 
 
-        /*
-            Mouse may have moved to another
-            card while searching.
-        */
+        if (
+            currentCard !==
+            card ||
+            token !==
+            soundcloudPlayToken
+        ) {
+
+            return;
+
+        }
+
+
+        if (
+            song.soundcloudId
+        ) {
+
+            const played =
+                await loadSoundCloudSong(
+                    song,
+                    token
+                );
+
+
+            if (
+                played
+            ) {
+
+                return;
+
+            }
+
+        }
+
+
+        // ====================================================
+        // SOUNDCLOUD FAILED
+        // -> YOUTUBE FALLBACK
+        // ====================================================
+
+        console.log(
+            "SoundCloud unavailable. Using YouTube fallback."
+        );
+
 
         if (
             currentCard !==
@@ -962,30 +1625,48 @@ async function handleCardEnter(
         }
 
 
-        const trackId =
-            song.soundcloudUrn ||
-            song.soundcloudId;
-
-
-        if (
-            trackId
-        ) {
-
-            await loadSoundCloudSong(
-                song,
-                token
-            );
-
-        }
+        await playYouTubeFallback(
+            song
+        );
 
     } catch (
         error
     ) {
 
-        console.error(
-            "Could not load SoundCloud:",
+        console.warn(
+            "SoundCloud failed, trying YouTube fallback:",
             error
         );
+
+
+        if (
+            currentCard !==
+            card ||
+            token !==
+            soundcloudPlayToken
+        ) {
+
+            return;
+
+        }
+
+
+        try {
+
+            await playYouTubeFallback(
+                song
+            );
+
+        } catch (
+            fallbackError
+        ) {
+
+            console.error(
+                "YouTube fallback also failed:",
+                fallbackError
+            );
+
+        }
 
     }
 
@@ -1006,6 +1687,9 @@ function handleCardLeave(
     ) {
 
         stopSoundCloud();
+
+
+        stopYouTube();
 
 
         currentCard =
