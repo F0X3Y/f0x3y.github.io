@@ -94,31 +94,27 @@ let backgroundChangeToken =
 
 
 // ============================================================
-// YOUTUBE STATE
+// SOUNDCLOUD STATE
 // ============================================================
 
-let youtubePlayer =
+const soundcloudAudio =
+    new Audio();
+
+
+soundcloudAudio.preload =
+    "none";
+
+
+soundcloudAudio.volume =
+    HOVER_VOLUME / 100;
+
+
+let soundcloudCurrentTrackId =
     null;
 
 
-let youtubePlayerReady =
-    false;
-
-
-let youtubeApiReady =
-    false;
-
-
-let youtubeApiPromise =
-    null;
-
-
-let youtubePlayerPromise =
-    null;
-
-
-let youtubeCurrentVideoId =
-    null;
+let soundcloudPlayToken =
+    0;
 
 
 // ============================================================
@@ -538,346 +534,10 @@ function resetBackground() {
 
 
 // ============================================================
-// YOUTUBE API READY
+// SEARCH SOUNDCLOUD
 // ============================================================
 
-window.onYouTubeIframeAPIReady =
-    function () {
-
-        console.log(
-            "YouTube IFrame API is ready."
-        );
-
-
-        youtubeApiReady =
-            true;
-
-    };
-
-
-// ============================================================
-// WAIT FOR YOUTUBE API
-// ============================================================
-
-function waitForYouTubeAPI() {
-
-    if (
-        youtubeApiReady &&
-        window.YT &&
-        window.YT.Player
-    ) {
-
-        return Promise.resolve();
-
-    }
-
-
-    if (
-        window.YT &&
-        window.YT.Player
-    ) {
-
-        youtubeApiReady =
-            true;
-
-
-        return Promise.resolve();
-
-    }
-
-
-    if (
-        youtubeApiPromise
-    ) {
-
-        return youtubeApiPromise;
-
-    }
-
-
-    youtubeApiPromise =
-        new Promise(
-            (
-                resolve,
-                reject
-            ) => {
-
-                let attempts =
-                    0;
-
-
-                const timer =
-                    setInterval(
-                        () => {
-
-                            attempts++;
-
-
-                            if (
-                                window.YT &&
-                                window.YT.Player
-                            ) {
-
-                                clearInterval(
-                                    timer
-                                );
-
-
-                                youtubeApiReady =
-                                    true;
-
-
-                                console.log(
-                                    "YouTube API detected."
-                                );
-
-
-                                resolve();
-
-                                return;
-
-                            }
-
-
-                            if (
-                                attempts >=
-                                400
-                            ) {
-
-                                clearInterval(
-                                    timer
-                                );
-
-
-                                reject(
-                                    new Error(
-                                        "YouTube IFrame API did not load."
-                                    )
-                                );
-
-                            }
-
-                        },
-                        50
-                    );
-
-            }
-        );
-
-
-    return youtubeApiPromise;
-
-}
-
-
-// ============================================================
-// CREATE PLAYER
-// ============================================================
-
-async function createYouTubePlayer() {
-
-    if (
-        youtubePlayer &&
-        youtubePlayerReady
-    ) {
-
-        return youtubePlayer;
-
-    }
-
-
-    if (
-        youtubePlayerPromise
-    ) {
-
-        return youtubePlayerPromise;
-
-    }
-
-
-    youtubePlayerPromise =
-        new Promise(
-            async (
-                resolve,
-                reject
-            ) => {
-
-                try {
-
-                    await waitForYouTubeAPI();
-
-
-                    const wrapper =
-                        document.getElementById(
-                            "youtube-preview-wrapper"
-                        );
-
-
-                    if (
-                        !wrapper
-                    ) {
-
-                        throw new Error(
-                            "youtube-preview-wrapper not found."
-                        );
-
-                    }
-
-
-                    /*
-                        Clear previous contents.
-                    */
-
-                    wrapper.innerHTML =
-                        "";
-
-
-                    /*
-                        Create a unique player element.
-                    */
-
-                    const playerElement =
-                        document.createElement(
-                            "div"
-                        );
-
-
-                    playerElement.id =
-                        "youtube-preview-player";
-
-
-                    wrapper.appendChild(
-                        playerElement
-                    );
-
-
-                    console.log(
-                        "Creating YouTube player..."
-                    );
-
-
-                    /*
-                        IMPORTANT:
-
-                        origin is explicitly passed to
-                        the IFrame API.
-                    */
-
-                    new YT.Player(
-                        "youtube-preview-player",
-                        {
-
-                            width:
-                                "480",
-
-                            height:
-                                "270",
-
-                            videoId:
-                                "",
-
-                            playerVars: {
-
-                                autoplay:
-                                    0,
-
-                                controls:
-                                    1,
-
-                                disablekb:
-                                    0,
-
-                                playsinline:
-                                    1,
-
-                                rel:
-                                    0,
-
-                                origin:
-                                    window.location.origin
-
-                            },
-
-
-                            events: {
-
-                                onReady:
-                                    event => {
-
-                                        console.log(
-                                            "YouTube player ready."
-                                        );
-
-
-                                        youtubePlayer =
-                                            event.target;
-
-
-                                        youtubePlayerReady =
-                                            true;
-
-
-                                        resolve(
-                                            youtubePlayer
-                                        );
-
-                                    },
-
-
-                                onStateChange:
-                                    event => {
-
-                                        console.log(
-                                            "YouTube player state:",
-                                            event.data
-                                        );
-
-                                    },
-
-
-                                onError:
-                                    event => {
-
-                                        console.error(
-                                            "YouTube player error:",
-                                            event.data
-                                        );
-
-                                    }
-
-                            }
-
-                        }
-                    );
-
-                } catch (
-                    error
-                ) {
-
-                    youtubePlayerPromise =
-                        null;
-
-
-                    reject(
-                        error
-                    );
-
-                }
-
-            }
-        );
-
-
-    return youtubePlayerPromise;
-
-}
-
-
-// ============================================================
-// SEARCH YOUTUBE
-// ============================================================
-
-async function searchYouTube(
+async function searchSoundCloud(
     song
 ) {
 
@@ -886,14 +546,14 @@ async function searchYouTube(
 
 
     console.log(
-        "Searching YouTube:",
+        "Searching SoundCloud:",
         query
     );
 
 
     const response =
         await fetch(
-            `${API_BASE}/api/youtube?q=${
+            `${API_BASE}/api/soundcloud?q=${
                 encodeURIComponent(
                     query
                 )
@@ -906,7 +566,7 @@ async function searchYouTube(
     ) {
 
         throw new Error(
-            `YouTube search failed: ${
+            `SoundCloud search failed: ${
                 response.status
             }`
         );
@@ -943,7 +603,8 @@ async function searchYouTube(
     const result =
         data.results.find(
             item =>
-                item.videoId
+                item.urn ||
+                item.id
         );
 
 
@@ -957,26 +618,131 @@ async function searchYouTube(
 
 
     console.log(
-        "YouTube result:",
-        result.videoId
+        "SoundCloud result:",
+        result
     );
 
 
-    return result.videoId;
+    return {
+
+        id:
+            result.id ??
+            null,
+
+        urn:
+            result.urn ??
+            null,
+
+        permalink:
+            result.permalink ??
+            null
+
+    };
 
 }
 
 
 // ============================================================
-// LOAD YOUTUBE SONG
+// GET SOUNDCLOUD STREAM URL
 // ============================================================
 
-async function loadYouTubeSong(
-    song
+async function getSoundCloudStreamUrl(
+    trackId
 ) {
 
     if (
-        !song.youtubeId
+        !trackId
+    ) {
+
+        throw new Error(
+            "Missing SoundCloud track ID."
+        );
+
+    }
+
+
+    const response =
+        await fetch(
+            `${API_BASE}/api/soundcloud/stream?track=${
+                encodeURIComponent(
+                    trackId
+                )
+            }`
+        );
+
+
+    if (
+        !response.ok
+    ) {
+
+        let details =
+            "";
+
+
+        try {
+
+            const data =
+                await response.json();
+
+
+            details =
+                data.details ||
+                data.error ||
+                "";
+
+        } catch {
+
+            // Ignore JSON errors.
+
+        }
+
+
+        throw new Error(
+            `SoundCloud stream lookup failed: ${
+                response.status
+            }${
+                details
+                    ? `: ${details}`
+                    : ""
+            }`
+        );
+
+    }
+
+
+    const data =
+        await response.json();
+
+
+    if (
+        !data ||
+        !data.streamUrl
+    ) {
+
+        throw new Error(
+            "SoundCloud did not return a stream URL."
+        );
+
+    }
+
+
+    return data.streamUrl;
+
+}
+
+
+// ============================================================
+// LOAD SOUNDCLOUD SONG
+// ============================================================
+
+async function loadSoundCloudSong(
+    song,
+    token
+) {
+
+    if (
+        !song.soundcloudId &&
+        !song.soundcloudUrn
     ) {
 
         return false;
@@ -984,96 +750,74 @@ async function loadYouTubeSong(
     }
 
 
-    const player =
-        await createYouTubePlayer();
+    const trackId =
+        song.soundcloudUrn ||
+        song.soundcloudId;
 
 
-    if (
-        !player ||
-        !youtubePlayerReady
-    ) {
-
-        throw new Error(
-            "YouTube player is not ready."
+    const streamUrl =
+        await getSoundCloudStreamUrl(
+            trackId
         );
-
-    }
-
-
-    console.log(
-        "Loading YouTube video:",
-        song.youtubeId
-    );
-
-
-    youtubeCurrentVideoId =
-        song.youtubeId;
-
-
-    player.loadVideoById({
-        videoId:
-            song.youtubeId,
-
-        startSeconds:
-            0
-    });
 
 
     /*
-        Give YouTube a short moment to accept
-        the newly loaded video before calling
-        playVideo().
+        The mouse may have moved to another
+        card while the request was running.
     */
 
-    await sleep(
-        100
-    );
-
-
-    player.setVolume(
-        HOVER_VOLUME
-    );
-
-
-    player.playVideo();
-
-
-    return true;
-
-}
-
-
-// ============================================================
-// PLAY YOUTUBE
-// ============================================================
-
-async function playYouTubeSong(
-    song
-) {
-
     if (
-        !song.youtubeId
+        token !==
+        soundcloudPlayToken
     ) {
 
-        return;
+        return false;
 
     }
+
+
+    soundcloudCurrentTrackId =
+        trackId;
+
+
+    soundcloudAudio.pause();
+
+
+    soundcloudAudio.src =
+        streamUrl;
+
+
+    soundcloudAudio.currentTime =
+        0;
+
+
+    soundcloudAudio.volume =
+        HOVER_VOLUME / 100;
 
 
     try {
 
-        await loadYouTubeSong(
-            song
+        await soundcloudAudio.play();
+
+        console.log(
+            "SoundCloud playback started:",
+            trackId
         );
+
+
+        return true;
 
     } catch (
         error
     ) {
 
         console.error(
-            "Could not play YouTube:",
+            "Could not play SoundCloud:",
             error
         );
+
+
+        return false;
 
     }
 
@@ -1081,69 +825,35 @@ async function playYouTubeSong(
 
 
 // ============================================================
-// PAUSE YOUTUBE
+// STOP SOUNDCLOUD
 // ============================================================
 
-function pauseYouTube() {
+function stopSoundCloud() {
 
-    if (
-        !youtubePlayer ||
-        !youtubePlayerReady
-    ) {
-
-        return;
-
-    }
+    soundcloudPlayToken++;
 
 
     try {
 
-        youtubePlayer.pauseVideo();
+        soundcloudAudio.pause();
 
-    } catch (
-        error
-    ) {
+    } catch {
 
-        console.warn(
-            "Could not pause YouTube:",
-            error
-        );
-
-    }
-
-}
-
-
-// ============================================================
-// STOP YOUTUBE
-// ============================================================
-
-function stopYouTube() {
-
-    if (
-        !youtubePlayer ||
-        !youtubePlayerReady
-    ) {
-
-        return;
+        // Ignore.
 
     }
 
 
-    try {
+    soundcloudAudio.removeAttribute(
+        "src"
+    );
 
-        youtubePlayer.stopVideo();
 
-    } catch (
-        error
-    ) {
+    soundcloudAudio.load();
 
-        console.warn(
-            "Could not stop YouTube:",
-            error
-        );
 
-    }
+    soundcloudCurrentTrackId =
+        null;
 
 }
 
@@ -1165,6 +875,10 @@ async function handleCardEnter(
         song;
 
 
+    const token =
+        ++soundcloudPlayToken;
+
+
     background.classList.add(
         "card-hover"
     );
@@ -1182,32 +896,65 @@ async function handleCardEnter(
     );
 
 
+    /*
+        The mouse may have moved away
+        while the background was loading.
+    */
+
+    if (
+        currentCard !==
+        card ||
+        token !==
+        soundcloudPlayToken
+    ) {
+
+        return;
+
+    }
+
+
     try {
 
         /*
-            Find the YouTube video once.
+            Search SoundCloud only once.
         */
 
         if (
-            !song.youtubeId
+            !song.soundcloudId &&
+            !song.soundcloudUrn
         ) {
 
-            song.youtubeId =
-                await searchYouTube(
+            const result =
+                await searchSoundCloud(
                     song
                 );
+
+
+            if (
+                result
+            ) {
+
+                song.soundcloudId =
+                    result.id;
+
+                song.soundcloudUrn =
+                    result.urn;
+
+            }
 
         }
 
 
         /*
             Mouse may have moved to another
-            card while search was running.
+            card while searching.
         */
 
         if (
             currentCard !==
-            card
+            card ||
+            token !==
+            soundcloudPlayToken
         ) {
 
             return;
@@ -1215,12 +962,18 @@ async function handleCardEnter(
         }
 
 
+        const trackId =
+            song.soundcloudUrn ||
+            song.soundcloudId;
+
+
         if (
-            song.youtubeId
+            trackId
         ) {
 
-            await playYouTubeSong(
-                song
+            await loadSoundCloudSong(
+                song,
+                token
             );
 
         }
@@ -1230,7 +983,7 @@ async function handleCardEnter(
     ) {
 
         console.error(
-            "Could not load YouTube:",
+            "Could not load SoundCloud:",
             error
         );
 
@@ -1252,7 +1005,7 @@ function handleCardLeave(
         card
     ) {
 
-        pauseYouTube();
+        stopSoundCloud();
 
 
         currentCard =
@@ -2271,6 +2024,10 @@ musicPlayer.classList.remove(
 
 playerGif.src =
     "musics/play.jpg";
+
+
+soundcloudAudio.volume =
+    HOVER_VOLUME / 100;
 
 
 // ============================================================
