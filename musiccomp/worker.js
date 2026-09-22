@@ -1828,24 +1828,147 @@ function mapSoundCloudCandidate(
 
 
 // ============================================================
-// SOUNDCLOUD SEARCH
+// SOUNDCLOUD SEARCH QUERY BUILDERS
 // ============================================================
 
-async function searchSoundCloud(
+function buildSoundCloudSearchQueries(
     artist,
-    title,
-    env
+    title
 ) {
 
-    const accessToken =
-        await getSoundCloudAccessToken(
-            env
+    const artistText =
+        String(
+            artist || ""
+        )
+            .trim();
+
+
+    const titleText =
+        String(
+            title || ""
+        )
+            .trim();
+
+
+    const cleanArtist =
+        artistText
+            .replace(
+                /\s*,\s*/g,
+                " "
+            )
+            .replace(
+                /\b(?:feat|ft|featuring)\b.*$/gi,
+                ""
+            )
+            .replace(
+                /[\[\]()_\-–—.,!?"'`:/|+*=<>]/g,
+                " "
+            )
+            .replace(
+                /\s+/g,
+                " "
+            )
+            .trim();
+
+
+    const cleanTitle =
+        titleText
+            .replace(
+                /\b(?:feat|ft|featuring)\b.*$/gi,
+                ""
+            )
+            .replace(
+                /[\[\]()_\-–—.,!?"'`:/|+*=<>]/g,
+                " "
+            )
+            .replace(
+                /\s+/g,
+                " "
+            )
+            .trim();
+
+
+    const queries =
+        new Set();
+
+
+    const addQuery =
+        value => {
+
+            const trimmed =
+                String(
+                    value || ""
+                )
+                    .trim();
+
+            if (
+                trimmed
+            ) {
+
+                queries.add(
+                    trimmed
+                );
+
+            }
+
+        };
+
+
+    addQuery(
+        [
+            cleanArtist,
+            cleanTitle
+        ]
+            .filter(
+                Boolean
+            )
+            .join(
+                " "
+            )
+    );
+
+
+    addQuery(
+        [
+            cleanTitle,
+            cleanArtist
+        ]
+            .filter(
+                Boolean
+            )
+            .join(
+                " "
+            )
+    );
+
+
+    addQuery(
+        cleanTitle
+    );
+
+
+    if (
+        cleanArtist
+    ) {
+
+        addQuery(
+            cleanArtist
         );
 
+    }
 
-    const query =
-        `${artist} ${title}`.trim();
 
+    return [
+        ...queries
+    ];
+
+}
+
+
+async function fetchSoundCloudSearchResults(
+    query,
+    accessToken
+) {
 
     const url =
         new URL(
@@ -1909,7 +2032,9 @@ async function searchSoundCloud(
 
         throw new Error(
 
-            `SoundCloud search failed: ${
+            `SoundCloud search failed for query "${
+                query
+            }": ${
                 JSON.stringify(
                     data
                 )
@@ -1920,33 +2045,160 @@ async function searchSoundCloud(
     }
 
 
-    const results =
-        (
-            data.collection ??
-            []
+    return (
+        data.collection ??
+        []
+    )
+        .filter(
+            track =>
+                track &&
+                track.kind ===
+                    "track" &&
+                track.id &&
+                track.access ===
+                    "playable"
         )
+        .map(
+            track =>
+                mapSoundCloudCandidate(
+                    track,
+                    {
+                        artist:
+                            query
+                                .split(
+                                    " "
+                                )
+                                .slice(
+                                    0,
+                                    -1
+                                )
+                                .join(
+                                    " "
+                                )
+                            ||
+                            "",
+                        title:
+                            query
+                                .split(
+                                    " "
+                                )
+                                .slice(
+                                    -1
+                                )
+                                .join(
+                                    " "
+                                )
+                            ||
+                            query
+                    }
+                )
+        );
 
-            .filter(
-                track =>
-                    track &&
-                    track.kind ===
-                        "track" &&
-                    track.id &&
-                    track.access ===
-                        "playable"
-            )
+}
 
+
+async function searchSoundCloud(
+    artist,
+    title,
+    env
+) {
+
+    const accessToken =
+        await getSoundCloudAccessToken(
+            env
+        );
+
+
+    const queries =
+        buildSoundCloudSearchQueries(
+            artist,
+            title
+        );
+
+
+    const resultsById =
+        new Map();
+
+
+    for (
+        const query
+        of queries
+    ) {
+
+        const queryResults =
+            await fetchSoundCloudSearchResults(
+                query,
+                accessToken
+            );
+
+
+        for (
+            const candidate
+            of queryResults
+        ) {
+
+            if (
+                !candidate ||
+                !candidate.id
+            ) {
+
+                continue;
+
+            }
+
+
+            if (
+                !resultsById.has(
+                    candidate.id
+                )
+            ) {
+
+                resultsById.set(
+                    candidate.id,
+                    candidate
+                );
+
+            }
+
+        }
+
+    }
+
+
+    const results =
+        [
+            ...resultsById.values()
+        ]
             .map(
-                track =>
-                    mapSoundCloudCandidate(
-                        track,
-                        {
-                            artist,
-                            title
-                        }
-                    )
+                candidate => ({
+                    ...candidate,
+                    score:
+                        scoreSoundCloudResult(
+                            {
+                                artist,
+                                title
+                            },
+                            {
+                                title:
+                                    candidate.title,
+                                user:
+                                    {
+                                        username:
+                                            candidate.artist
+                                    },
+                                publisher_metadata:
+                                    {
+                                        artist:
+                                            candidate.artist
+                                    },
+                                duration:
+                                    candidate.duration,
+                                access:
+                                    candidate.access
+                            }
+                        )
+                })
             )
-
             .sort(
                 (
                     first,
@@ -1963,16 +2215,11 @@ async function searchSoundCloud(
         null;
 
 
-    /*
-        A very strong match gets accepted at 70.
-        Below that the frontend will use YouTube.
-    */
-
     const matched =
         Boolean(
             bestCandidate &&
             bestCandidate.score >=
-                50
+                35
         );
 
 
