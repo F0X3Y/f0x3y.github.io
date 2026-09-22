@@ -11,7 +11,7 @@ get_videos(url,page=1)
      visszadob egy stringekkel teli listát ["név1","név2","valami"]
      to_thumbnail_link()-ben és to_video_link()-ben kell használni
 
-     Amúgy meg valamiért sokkal könnyeb először angolul leírni utána magyarul nemtom miért
+     Amúgy meg valamiért sokkal könnyeb először angolul leírni utána magyarul nemtom miért. Lwk real
 
 to_thumbnail_link(url,video_name)
     Turn video names into links to thumbnails (session token in link so it knows who is signed in)
