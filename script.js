@@ -861,7 +861,7 @@ function formatSize(bytes) {
 
     // Csak submit oldalon fusson
     if (fileInput && dropZone && clipContainer && submitButton) {
-        submitButton.addEventListener("click", () => {
+        submitButton.addEventListener("click", async () => {
             const hasSelectedFiles = fileInput.files && fileInput.files.length > 0;
             let failed=false
             if (!hasSelectedFiles) {
