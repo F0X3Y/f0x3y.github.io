@@ -639,7 +639,7 @@ async function uploadFile(file) {
         xhr.setRequestHeader("Content-Type", "application/octet-stream");
         xhr.setRequestHeader("filename", file.name);
         xhr.setRequestHeader(AUTH_HEADER_NAME, token);
-        xhr.setRequestHeader("description",toString({"description":description,"game":game}))
+        xhr.setRequestHeader("description",JSON.stringify({"description":description,"game":game}))
 
         xhr.upload.addEventListener("progress", (event) => {
             if (!event.lengthComputable) {
