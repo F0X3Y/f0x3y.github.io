@@ -509,7 +509,7 @@ function resetSubmitPage() {
     updateAuthButtonState();
 }
 
-const STATUS_POLL_INTERVAL_MS = 30000;
+const STATUS_POLL_INTERVAL_MS = 120000;
 const STATUS_TIMEOUT_MS = 5000;
 
 function setCheckingState() {
