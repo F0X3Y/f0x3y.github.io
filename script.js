@@ -879,6 +879,7 @@ function formatSize(bytes) {
             }
             if (!failed){resetSubmitPage()};
             showUploadSuccess("Sikeres beküldés");
+            setUploadProgress(100,false,"")
         });
 
         // ===============================
