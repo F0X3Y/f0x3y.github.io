@@ -867,7 +867,7 @@ function formatSize(bytes) {
             if (!hasSelectedFiles) {
                 return;
             }
-            fileInput.files.forEach((file) =>{
+            fileInput.files.forEach(async (file) =>{
 
                 try {
                     await uploadFile(file);
