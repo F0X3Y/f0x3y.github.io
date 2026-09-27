@@ -867,7 +867,7 @@ function formatSize(bytes) {
             if (!hasSelectedFiles) {
                 return;
             }
-            for (e in fileInput.files){
+            fileInput.files.forEach((file) =>{
 
                 try {
                     await uploadFile(file);
@@ -876,7 +876,7 @@ function formatSize(bytes) {
                     failed=true
                     break;
                 }
-            }
+            })
             if (!failed){resetSubmitPage()};
             showUploadSuccess("Sikeres beküldés");
         });
