@@ -19,28 +19,23 @@ async function safeGetToken() {
     } catch (error) {
         console.warn("Token lekérés sikertelen:", error);
     }
-
     return "";
 }
 
 async function authHeaders(extraHeaders = {}) {
     const headers = new Headers(extraHeaders);
     const token = await safeGetToken();
-
     if (token) {
         headers.set(AUTH_HEADER_NAME, token);
     }
-
     return headers;
 }
 
 function getNextUrl(defaultUrl = "profile.html") {
     const params = new URLSearchParams(window.location.search);
     const next = params.get("next");
-
     if (!next) return defaultUrl;
     if (/^https?:\/\//i.test(next)) return defaultUrl;
-
     return next;
 }
 
@@ -48,11 +43,9 @@ function buildNavLink(href, text, className = "") {
     const link = document.createElement("a");
     link.href = href;
     link.textContent = text;
-
     if (className) {
         link.className = className;
     }
-
     return link;
 }
 
@@ -63,11 +56,7 @@ function attachPageTransitionHandlers(root = document) {
 
         const url = link.href;
 
-        if (
-            url &&
-            url.startsWith(window.location.origin) &&
-            !link.target
-        ) {
+        if (url && url.startsWith(window.location.origin) && !link.target) {
             link.addEventListener("click", event => {
                 event.preventDefault();
 
@@ -137,7 +126,6 @@ async function setupProfileUsername() {
     } catch (error) {
         console.warn("Felhasználónév lekérés sikertelen:", error);
     }
-
     usernameEl.textContent = "Felhasználó";
 }
 
@@ -174,18 +162,14 @@ function updateAuthButtonState() {
 }
 
 function setupPasswordChecklist() {
-    if (document.body?.dataset?.authPage !== "signup") {
-        return;
-    }
+    if (document.body?.dataset?.authPage !== "signup") return;
 
     const passwordInput = document.getElementById("auth-password");
     const lengthCheck = document.getElementById("length-check");
     const numberCheck = document.getElementById("number-check");
     const specialCheck = document.getElementById("special-check");
 
-    if (!passwordInput || !lengthCheck || !numberCheck || !specialCheck) {
-        return;
-    }
+    if (!passwordInput || !lengthCheck || !numberCheck || !specialCheck) return;
 
     function updateCheck(element, valid, text) {
         element.textContent = `${valid ? "✔" : "✗"} ${text}`;
@@ -225,7 +209,6 @@ async function setupAuthPage() {
 
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
-
         const username = usernameInput.value.trim();
         const password = passwordInput.value;
 
@@ -240,7 +223,6 @@ async function setupAuthPage() {
 
         if (page === "signup") {
             const validity = isSignupPasswordValid(password);
-
             if (!validity.allValid) {
                 if (message) {
                     message.textContent = "A jelszó nem felel meg a követelményeknek.";
@@ -294,28 +276,22 @@ async function setupAuthPage() {
 }
 
 async function requireAuthForProfilePage() {
-    if (!window.location.pathname.endsWith("profile.html")) {
-        return true;
-    }
-
+    if (!window.location.pathname.endsWith("profile.html")) return true;
     const token = await safeGetToken();
     if (!token) {
         window.location.replace(`login.html?next=${encodeURIComponent("profile.html")}`);
         return false;
     }
-
     return true;
 }
 
 async function requireAuthForSubmitPage() {
     if (!window.location.pathname.endsWith("submit.html")) return true;
-
     const token = await safeGetToken();
     if (!token) {
         window.location.replace(`login.html?next=${encodeURIComponent("submit.html")}`);
         return false;
     }
-
     return true;
 }
 
@@ -332,17 +308,14 @@ function applyAccentColor(value) {
 }
 
 colorImage.src = "images/background.png";
-
 colorImage.onload = () => {
     if (typeof window.ColorThief !== "function") {
         applyAccentColor(fallbackAccent);
         return;
     }
-
     try {
         const colorThief = new window.ColorThief();
         const palette = colorThief.getPalette(colorImage, 8);
-
         if (!palette || !palette.length) {
             applyAccentColor(fallbackAccent);
             return;
@@ -350,32 +323,23 @@ colorImage.onload = () => {
 
         let bestColor = palette[0];
         let bestScore = 0;
-
         palette.forEach(color => {
-            const r = color[0];
-            const g = color[1];
-            const b = color[2];
+            const r = color[0], g = color[1], b = color[2];
             const brightness = (r + g + b) / 3;
-            const max = Math.max(r, g, b);
-            const min = Math.min(r, g, b);
+            const max = Math.max(r, g, b), min = Math.min(r, g, b);
             const saturation = max - min;
             const score = saturation * 2 + brightness;
-
             if (score > bestScore) {
                 bestScore = score;
                 bestColor = color;
             }
         });
-
         const rgb = `rgb(${bestColor[0]}, ${bestColor[1]}, ${bestColor[2]})`;
         applyAccentColor(rgb);
-        console.log("Accent:", rgb);
     } catch (error) {
-        console.warn("Accent color fallback used:", error);
         applyAccentColor(fallbackAccent);
     }
 };
-
 colorImage.onerror = () => {
     applyAccentColor(fallbackAccent);
 };
@@ -383,9 +347,7 @@ colorImage.onerror = () => {
 // ===============================
 // YOUTUBE LATEST CLIP SETUP
 // ===============================
-
 const latestClipPlaylist = document.getElementById("latest-clip-playlist");
-
 if (latestClipPlaylist) {
     const latestVideoId = "YYiz76Nfhb0";
     latestClipPlaylist.src = `https://www.youtube.com/embed/${latestVideoId}`;
@@ -401,19 +363,14 @@ const FALLBACK_SERVER_URL = "https://m125gamedev.ipv64.de:59397";
 
 async function get_url() {
     const candidates = [DUCKDNS_SERVER_URL, FALLBACK_SERVER_URL];
-
     for (const candidate of candidates) {
         try {
             const response = await fetchWithTimeout(`${candidate}/active`, 2000);
-
-            if (response && response.ok) {
-                return candidate;
-            }
+            if (response && response.ok) return candidate;
         } catch (error) {
-            // A candidate nem elérhető, próbáljuk a következőt.
+            // Nem elérhető, megyünk a következőre
         }
     }
-
     return FALLBACK_SERVER_URL;
 }
 
@@ -423,7 +380,6 @@ let SERVER_STATUS_URL = `${SERVER_URL}/active`;
 const fileInput = document.getElementById("file-input");
 const dropZone = document.getElementById("drop-zone");
 const clipContainer = document.getElementById("clip-container");
-const profileClipList = document.getElementById("profile-clip-list");
 const submitButton = document.querySelector(".submit-box button[type='submit']");
 const uploadProgressWrapper = document.getElementById("upload-progress-wrapper");
 const uploadProgressBar = document.getElementById("upload-progress-bar");
@@ -433,10 +389,11 @@ const uploadStatus = document.getElementById("upload-status");
 let serverAvailable = false;
 let uploadErrorTimer = null;
 
+// Global state for keeping track of all currently selected files (fixes the drag & drop overriding bug)
+let globalFileStore = new DataTransfer();
+
 function setUploadProgress(percent, visible = true, label) {
-    if (!uploadProgressWrapper || !uploadProgressBar || !uploadProgressText) {
-        return;
-    }
+    if (!uploadProgressWrapper || !uploadProgressBar || !uploadProgressText) return;
 
     const clampedPercent = Math.min(100, Math.max(0, percent));
     const roundedPercent = Math.round(clampedPercent);
@@ -455,55 +412,35 @@ function setUploadProgress(percent, visible = true, label) {
 }
 
 function showUploadError(message, durationMs = 10000) {
-    if (!uploadStatus) {
-        return;
-    }
-
+    if (!uploadStatus) return;
     clearTimeout(uploadErrorTimer);
     uploadStatus.textContent = message;
-    uploadStatus.classList.remove("success");
-    uploadStatus.classList.remove("error");
+    uploadStatus.classList.remove("success", "error");
     uploadStatus.classList.add("visible", "error");
-
     uploadErrorTimer = setTimeout(() => {
         uploadStatus.classList.remove("visible", "error");
-        setTimeout(() => {
-            uploadStatus.textContent = "";
-        }, 250);
+        setTimeout(() => uploadStatus.textContent = "", 250);
     }, durationMs);
 }
 
 function showUploadSuccess(message, durationMs = 4000) {
-    if (!uploadStatus) {
-        return;
-    }
-
+    if (!uploadStatus) return;
     clearTimeout(uploadErrorTimer);
     uploadStatus.textContent = message;
     uploadStatus.classList.remove("error");
     uploadStatus.classList.add("visible", "success");
-
     uploadErrorTimer = setTimeout(() => {
         uploadStatus.classList.remove("visible", "success");
-        setTimeout(() => {
-            uploadStatus.textContent = "";
-        }, 250);
+        setTimeout(() => uploadStatus.textContent = "", 250);
     }, durationMs);
 }
 
 function resetSubmitPage() {
-    if (fileInput) {
-        fileInput.value = "";
-    }
-
-    if (clipContainer) {
-        clipContainer.innerHTML = "";
-    }
-
-    if (dropZone) {
-        dropZone.style.background = "";
-    }
-
+    globalFileStore = new DataTransfer(); // Reset store
+    if (fileInput) fileInput.value = "";
+    if (clipContainer) clipContainer.innerHTML = "";
+    if (dropZone) dropZone.style.background = "";
+    
     setUploadProgress(0, false);
     updateSubmitButtonState();
     updateAuthButtonState();
@@ -514,14 +451,10 @@ const STATUS_TIMEOUT_MS = 5000;
 
 function setCheckingState() {
     const widgets = document.querySelectorAll("[data-server-status]");
-
     widgets.forEach(widget => {
         const statusText = widget.querySelector(".server-status-text");
         const statusDot = widget.querySelector(".server-status-dot");
-
-        if (!statusText || !statusDot) {
-            return;
-        }
+        if (!statusText || !statusDot) return;
 
         widget.classList.remove("online", "offline");
         statusText.textContent = "A szerver ellenőrzése...";
@@ -530,11 +463,8 @@ function setCheckingState() {
 }
 
 function updateSubmitButtonState() {
-    if (!submitButton) {
-        return;
-    }
-
-    const hasSelectedFiles = !!fileInput && fileInput.files && fileInput.files.length > 0;
+    if (!submitButton) return;
+    const hasSelectedFiles = globalFileStore.files.length > 0;
     const shouldDisable = !serverAvailable || !hasSelectedFiles;
 
     submitButton.disabled = shouldDisable;
@@ -544,22 +474,16 @@ function updateSubmitButtonState() {
 
 function updateServerStatusWidgets(isOnline) {
     const widgets = document.querySelectorAll("[data-server-status]");
-
     widgets.forEach(widget => {
         const statusText = widget.querySelector(".server-status-text");
         const statusDot = widget.querySelector(".server-status-dot");
-
-        if (!statusText || !statusDot) {
-            return;
-        }
+        if (!statusText || !statusDot) return;
 
         widget.classList.toggle("online", isOnline);
         widget.classList.toggle("offline", !isOnline);
-
         statusText.textContent = isOnline ? "A szerver online" : "A szerver offline";
         statusDot.setAttribute("aria-label", isOnline ? "online" : "offline");
     });
-
     serverAvailable = isOnline;
     updateSubmitButtonState();
     updateAuthButtonState();
@@ -573,10 +497,8 @@ async function initializeServerUrl() {
 async function fetchWithTimeout(url, timeoutMs, options = {}) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
     try {
         const headers = await authHeaders(options.headers || {});
-
         return await fetch(url, {
             ...options,
             method: options.method || "GET",
@@ -592,31 +514,24 @@ async function fetchWithTimeout(url, timeoutMs, options = {}) {
 
 async function checkServerStatus() {
     setCheckingState();
-
     try {
         const response = await fetchWithTimeout(SERVER_STATUS_URL, STATUS_TIMEOUT_MS);
-
         if (response.ok && response.status === 200) {
             updateServerStatusWidgets(true);
             return;
         }
-    } catch (error) {
-        // A timeout vagy hibás válasz azt jelzi, hogy a szerver nem érhető el.
-    }
-
+    } catch (error) {}
     updateServerStatusWidgets(false);
 }
 
 const refreshButton = document.getElementById("server-status-refresh");
-if (refreshButton) {
-    refreshButton.addEventListener("click", checkServerStatus);
-}
+if (refreshButton) refreshButton.addEventListener("click", checkServerStatus);
 
 // ===============================
-// FILE UPLOAD
+// FILE UPLOAD (ZIPPED)
 // ===============================
 
-async function uploadFile(file) {
+async function uploadFile(zipFile, description, game, currentIndex, totalFiles) {
     const token = await safeGetToken();
 
     if (!token) {
@@ -627,60 +542,42 @@ async function uploadFile(file) {
 
     return await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-
-        setUploadProgress(0, true, "Feltöltés...");
-        const card=document.getElementById(file.name).querySelector("div > div.details")
-        const description=card.querySelector(".comment").value
-        const game=card.querySelector(".game").value
-
-
         xhr.open("UPLOAD", SERVER_URL, true);
-        xhr.setRequestHeader("Content-Length", String(file.size));
-        xhr.setRequestHeader("Content-Type", "application/octet-stream");
-        xhr.setRequestHeader("filename", file.name);
+        xhr.setRequestHeader("Content-Length", String(zipFile.size));
+        xhr.setRequestHeader("Content-Type", "application/zip");
+        xhr.setRequestHeader("filename", zipFile.name);
         xhr.setRequestHeader(AUTH_HEADER_NAME, token);
-        xhr.setRequestHeader("description",toString({"description":description,"game":game}))
+        
+        // Fix: Use JSON.stringify instead of toString()
+        xhr.setRequestHeader("description", JSON.stringify({ "description": description, "game": game }));
 
         xhr.upload.addEventListener("progress", (event) => {
-            if (!event.lengthComputable) {
-                return;
-            }
-
+            if (!event.lengthComputable) return;
             const percent = (event.loaded / event.total) * 100;
-            const label = percent > 0 ? `${Math.round(percent)}%` : "Feltöltés...";
+            // Intuitive progress label
+            const label = `Feltöltés folyamatban: ${Math.round(percent)}% (${currentIndex} / ${totalFiles} fájl)`;
             setUploadProgress(percent, true, label);
         });
 
         xhr.onload = () => {
             const ok = xhr.status >= 200 && xhr.status < 300;
-
             if (!ok) {
                 setUploadProgress(0, false);
-                showUploadError("Feltöltés sikertelen. Próbáld újra.");
                 reject(new Error(`Upload failed with status ${xhr.status}`));
                 return;
             }
-
-            const responseText = xhr.responseText || "";
-            console.log("Feltöltve:", file.name);
-            console.log(responseText);
-            setUploadProgress(100, true, "100%");
-
-            setTimeout(() => {
-                setUploadProgress(0, false);
-            }, 600);
-
+            console.log(`Feltöltve: ${zipFile.name}`);
+            setUploadProgress(100, true, `${currentIndex}. fájl sikeresen feltöltve!`);
             resolve();
         };
 
         xhr.onerror = () => {
             setUploadProgress(0, false);
-            showUploadError("Feltöltés sikertelen. Próbáld újra.");
-            console.error("Feltöltési hiba:", file.name);
+            console.error("Feltöltési hiba:", zipFile.name);
             reject(new Error("Upload request failed"));
         };
 
-        xhr.send(file);
+        xhr.send(zipFile);
     });
 }
 
@@ -697,67 +594,43 @@ function escapeHtml(value) {
         .replaceAll("'", "&#39;");
 }
 
+function removeFileFromStore(fileName) {
+    const dt = new DataTransfer();
+    for (let file of globalFileStore.files) {
+        if (file.name !== fileName) {
+            dt.items.add(file);
+        }
+    }
+    globalFileStore = dt;
+    fileInput.files = globalFileStore.files;
+    updateSubmitButtonState();
+}
+
 function createClipCard(file) {
     const card = document.createElement("div");
     card.className = "clip-card collapsed";
-    card.id=file.name;
+    // We store the filename safely in a dataset attribute to look it up during upload
+    card.dataset.filename = file.name; 
+    
     const videoURL = URL.createObjectURL(file);
     const safeName = escapeHtml(file.name);
 
     card.innerHTML = `
         <div class="clip-header">
-            <video
-                class="preview"
-                muted
-                playsinline
-                preload="metadata"
-            >
+            <video class="preview" muted playsinline preload="metadata">
                 <source src="${videoURL}">
             </video>
-
             <div class="info">
-                <input
-                    class="filename"
-                    value="${safeName}"
-                    disabled
-                >
-
-                <div class="filesize">
-                    ${formatSize(file.size)}
-                </div>
+                <input class="filename" value="${safeName}" disabled>
+                <div class="filesize">${formatSize(file.size)}</div>
             </div>
-
-            <button
-                class="expand"
-                type="button"
-            >
-                ▼
-            </button>
+            <button class="expand" type="button">▼</button>
         </div>
-
         <div class="details">
-            <input
-                class="game"
-                type="text"
-                placeholder="Játék neve (opcionális)"
-            >
-
-            <textarea
-                class="comment"
-                maxlength="500"
-                placeholder="Megjegyzés"
-            ></textarea>
-
-            <div class="counter">
-                0 / 500
-            </div>
-
-            <button
-                class="delete"
-                type="button"
-            >
-                🗑 Törlés
-            </button>
+            <input class="game" type="text" placeholder="Játék neve (opcionális)">
+            <textarea class="comment" maxlength="500" placeholder="Megjegyzés"></textarea>
+            <div class="counter">0 / 500</div>
+            <button class="delete" type="button">🗑 Törlés</button>
         </div>
     `;
 
@@ -772,17 +645,12 @@ function createClipCard(file) {
 
     if (preview) {
         preview.addEventListener("loadedmetadata", () => {
-            try {
-                preview.currentTime = Math.min(0.1, preview.duration || 0);
-            } catch {
-                // ignore
-            }
+            try { preview.currentTime = Math.min(0.1, preview.duration || 0); } catch {}
         });
     }
 
     expand.addEventListener("click", () => {
         card.classList.toggle("collapsed");
-
         if (card.classList.contains("collapsed")) {
             filename.disabled = true;
             expand.textContent = "▼";
@@ -800,6 +668,8 @@ function createClipCard(file) {
     deleteButton.addEventListener("click", () => {
         URL.revokeObjectURL(videoURL);
         card.remove();
+        // Remove file from our internal storage to stay synced
+        removeFileFromStore(file.name); 
     });
 }
 
@@ -807,31 +677,30 @@ function createClipCard(file) {
 // FILE PROCESSING
 // ===============================
 
-async function handleFiles(files) {
-    for (const file of files) {
-        if (!file.type.startsWith("video/")) {
-            continue;
-        }
-
-        createClipCard(file);
-
+function addFilesToStore(files) {
+    for (let file of files) {
+        if (!file.type.startsWith("video/")) continue;
         
+        // Prevent duplicate file names
+        let exists = false;
+        for (let existing of globalFileStore.files) {
+            if (existing.name === file.name) exists = true;
+        }
+        
+        if (!exists) {
+            globalFileStore.items.add(file);
+            createClipCard(file);
+        }
     }
+    
+    // Sync the input state
+    fileInput.files = globalFileStore.files; 
+    updateSubmitButtonState();
 }
 
-// ===============================
-// FILE SIZE FORMAT
-// ===============================
-
 function formatSize(bytes) {
-    if (bytes < 1024) {
-        return bytes + " B";
-    }
-
-    if (bytes < 1024 * 1024) {
-        return (bytes / 1024).toFixed(1) + " KB";
-    }
-
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
     return (bytes / 1024 / 1024).toFixed(1) + " MB";
 }
 
@@ -843,9 +712,7 @@ function formatSize(bytes) {
     await syncAuthNavigation();
 
     const profileAuthOk = await requireAuthForProfilePage();
-    if (!profileAuthOk) {
-        return;
-    }
+    if (!profileAuthOk) return;
 
     await setupProfileUsername();
     await setupAuthPage();
@@ -859,45 +726,76 @@ function formatSize(bytes) {
     checkServerStatus();
     setInterval(checkServerStatus, STATUS_POLL_INTERVAL_MS);
 
-    // Csak submit oldalon fusson
+    // Run only on submit page
     if (fileInput && dropZone && clipContainer && submitButton) {
-        submitButton.addEventListener("click", () => {
-            const hasSelectedFiles = fileInput.files && fileInput.files.length > 0;
-            let failed=false
-            if (!hasSelectedFiles) {
+        
+        submitButton.addEventListener("click", async () => {
+            const filesToUpload = Array.from(globalFileStore.files);
+            if (filesToUpload.length === 0) return;
+
+            if (typeof JSZip === 'undefined') {
+                showUploadError("A ZIP modul nem töltődött be. Kérlek frissítsd az oldalt!");
                 return;
             }
-            for (e in fileInput.files){
 
+            submitButton.disabled = true; // Prevent multiple clicks
+            let failed = false;
+
+            // Proper loop over array
+            for (let i = 0; i < filesToUpload.length; i++) {
+                const file = filesToUpload[i];
                 try {
-                    await uploadFile(file);
+                    // Extract data from the UI cards
+                    const card = document.querySelector(`.clip-card[data-filename="${CSS.escape(file.name)}"]`);
+                    const description = card ? card.querySelector(".comment").value : "";
+                    const game = card ? card.querySelector(".game").value : "";
+
+                    // Inform the user we are zipping the files locally
+                    setUploadProgress(0, true, `${i + 1}/${filesToUpload.length}. fájl csomagolása ZIP-be...`);
+                    
+                    // Create local zip archive
+                    const zip = new JSZip();
+                    zip.file(file.name, file);
+                    zip.file("metadata.json", JSON.stringify({ description, game }, null, 2));
+                    
+                    // Compress using STORE (no compression) because video files are already compressed
+                    // This prevents the browser from freezing on massive video files
+                    const zipBlob = await zip.generateAsync({ type: "blob", compression: "STORE" });
+                    const zipFile = new File([zipBlob], `${file.name}.zip`, { type: "application/zip" });
+
+                    // Upload the zip
+                    await uploadFile(zipFile, description, game, i + 1, filesToUpload.length);
+                    
                 } catch (error) {
                     console.error(error);
-                    failed=true
+                    failed = true;
+                    showUploadError(`Hiba történt a(z) ${file.name} feltöltése közben!`);
                     break;
                 }
             }
-            if (!failed){resetSubmitPage()};
-            showUploadSuccess("Sikeres beküldés");
-        });
 
-        // ===============================
-        // TALLÓZÁS
-        // ===============================
-        dropZone.addEventListener("click", () => {
-            fileInput.click();
-        });
-
-        fileInput.addEventListener("change", () => {
-            void handleFiles(fileInput.files).catch(error => {
-                console.error(error);
-            });
+            if (!failed) {
+                resetSubmitPage();
+                showUploadSuccess("🎉 Minden clip sikeresen feltöltve!");
+                // Wait briefly, then hide the upload bar fully
+                setTimeout(() => setUploadProgress(0, false), 3000); 
+            }
+            
             updateSubmitButtonState();
         });
 
         // ===============================
-        // DRAG & DROP
+        // TALLÓZÁS ÉS DRAG & DROP
         // ===============================
+        
+        dropZone.addEventListener("click", () => fileInput.click());
+
+        // FileInput Change
+        fileInput.addEventListener("change", () => {
+            addFilesToStore(fileInput.files);
+        });
+
+        // Drag events
         dropZone.addEventListener("dragover", (event) => {
             event.preventDefault();
             dropZone.style.background = "#20232b";
@@ -910,16 +808,8 @@ function formatSize(bytes) {
         dropZone.addEventListener("drop", (event) => {
             event.preventDefault();
             dropZone.style.background = "";
-            void handleFiles(event.dataTransfer.files).catch(error => {
-                console.error(error);
-            });
-            updateSubmitButtonState();
+            addFilesToStore(event.dataTransfer.files);
         });
-    }
-
-    // Profile page interactions, if any
-    if (profileClipList) {
-        // placeholder for future profile clip logic
     }
 
     attachPageTransitionHandlers();

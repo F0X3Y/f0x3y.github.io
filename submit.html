@@ -2,7 +2,6 @@
 <html lang="hu">
 
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -13,78 +12,39 @@
 
 </head>
 
-
 <body>
-
 <div id="page-transition"></div>
 
 <nav>
-
     <h2>🎬 ClipNézegetés</h2>
-
     <div class="nav-actions">
-
         <div class="server-status-nav" data-server-status="nav" aria-live="polite">
             <span class="server-status-dot"></span>
             <span class="server-status-text">A szerver ellenőrzése...</span>
         </div>
-
         <a href="index.html">Home</a>
-
         <a href="submit.html">Beküldés</a>
-
         <a href="clips.html">Böngészés</a>
-
         <a href="profile.html">Profil</a>
-
     </div>
-
 </nav>
 
-
-
-
 <main>
-
-
 <section class="submit-box">
-
-
     <h1>🎥 Clip beküldése</h1>
 
-
-
     <div id="drop-zone">
-
-
-        <p>
-            🎬 Húzd ide a clip-eket
-        </p>
-
-
-        <span>
-            vagy kattints a tallózáshoz
-        </span>
-
-
-
+        <p>🎬 Húzd ide a clip-eket</p>
+        <span>vagy kattints a tallózáshoz</span>
         <input 
             id="file-input"
             type="file"
             accept="video/*"
             multiple
         >
-
-
     </div>
 
-
-
-
-
     <div id="clip-container"></div>
-
-
 
     <div class="submit-controls">
         <div id="upload-progress-wrapper" class="upload-progress-wrapper hidden" aria-live="polite">
@@ -110,22 +70,14 @@
             </div>
         </div>
     </div>
-
-
-
 </section>
-
 
 </main>
 
-
-<!--  -->
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js"></script>
 <script src="backend_comms.js"></script>
 <script src="script.js"></script>
 
-
 </body>
-
 </html>

@@ -144,6 +144,9 @@ let youtubePlayerPromise =
 let youtubeCurrentVideoId =
     null;
 
+let youtubePlaybackWaiter =
+    null;
+
 
 // ============================================================
 // HELPERS
@@ -841,6 +844,15 @@ async function createYouTubePlayer() {
                                             event.data
                                         );
 
+                                        if (
+                                            event.data ===
+                                                YT.PlayerState.PLAYING &&
+                                            youtubePlaybackWaiter
+                                        ) {
+                                            youtubePlaybackWaiter.resolve();
+                                            youtubePlaybackWaiter = null;
+                                        }
+
                                     },
 
 
@@ -851,6 +863,17 @@ async function createYouTubePlayer() {
                                             "YouTube player error:",
                                             event.data
                                         );
+
+                                        if (
+                                            youtubePlaybackWaiter
+                                        ) {
+                                            youtubePlaybackWaiter.reject(
+                                                new Error(
+                                                    `YouTube playback error ${event.data}`
+                                                )
+                                            );
+                                            youtubePlaybackWaiter = null;
+                                        }
 
                                     }
 
@@ -1304,15 +1327,15 @@ async function searchYouTubeFallback(
     }
 
 
-    const result =
-        data.results.find(
+    const results =
+        data.results.filter(
             item =>
-                item.videoId
+                item && item.videoId
         );
 
 
     if (
-        !result
+        !results.length
     ) {
 
         return null;
@@ -1322,13 +1345,13 @@ async function searchYouTubeFallback(
 
     console.log(
         "YouTube fallback result:",
-        result.videoId,
-        result.title,
-        result.score
+        results[0].videoId,
+        results[0].title,
+        results[0].score
     );
 
 
-    return result.videoId;
+    return results;
 
 }
 
@@ -1341,14 +1364,15 @@ async function playYouTubeFallback(
     song
 ) {
 
-    const videoId =
+    const results =
         await searchYouTubeFallback(
             song
         );
 
 
     if (
-        !videoId
+        !results ||
+        !results.length
     ) {
 
         console.warn(
@@ -1377,40 +1401,47 @@ async function playYouTubeFallback(
     }
 
 
-    youtubeCurrentVideoId =
-        videoId;
+    for (const result of results) {
+        const videoId = result.videoId;
 
+        try {
+            youtubeCurrentVideoId = videoId;
 
-    player.loadVideoById({
+            const playbackStarted = new Promise((resolve, reject) => {
+                youtubePlaybackWaiter = { resolve, reject };
+                setTimeout(() => {
+                    if (youtubePlaybackWaiter) {
+                        youtubePlaybackWaiter = null;
+                        reject(new Error("YouTube playback timed out."));
+                    }
+                }, 8000);
+            });
 
-        videoId,
+            player.loadVideoById({
+                videoId,
+                startSeconds: 0
+            });
 
-        startSeconds:
-            0
+            player.setVolume(HOVER_VOLUME);
+            player.playVideo();
+            await playbackStarted;
 
-    });
+            console.log(
+                "YouTube fallback playback started:",
+                videoId
+            );
 
+            return true;
+        } catch (error) {
+            console.warn(
+                "YouTube candidate failed, trying the next result:",
+                videoId,
+                error
+            );
+        }
+    }
 
-    await sleep(
-        100
-    );
-
-
-    player.setVolume(
-        HOVER_VOLUME
-    );
-
-
-    player.playVideo();
-
-
-    console.log(
-        "YouTube fallback playback started:",
-        videoId
-    );
-
-
-    return true;
+    throw new Error("All YouTube fallback results failed.");
 
 }
 
