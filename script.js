@@ -544,7 +544,7 @@ async function uploadFile(zipFile, description, game, currentIndex, totalFiles) 
         const xhr = new XMLHttpRequest();
         xhr.open("UPLOAD", SERVER_URL, true);
         xhr.setRequestHeader("Content-Length", String(zipFile.size));
-        xhr.setRequestHeader("Content-Type", "application/zip");
+        xhr.setRequestHeader("Content-Type", "application/octet_stream");
         xhr.setRequestHeader("filename", zipFile.name);
         xhr.setRequestHeader(AUTH_HEADER_NAME, token);
         
