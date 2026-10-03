@@ -446,7 +446,7 @@ function resetSubmitPage() {
     updateAuthButtonState();
 }
 
-const STATUS_POLL_INTERVAL_MS = 30000;
+const STATUS_POLL_INTERVAL_MS = 120000;
 const STATUS_TIMEOUT_MS = 5000;
 
 function setCheckingState() {
@@ -547,9 +547,13 @@ async function uploadFile(zipFile, description, game, currentIndex, totalFiles) 
         xhr.setRequestHeader("Content-Type", "application/zip");
         xhr.setRequestHeader("filename", zipFile.name);
         xhr.setRequestHeader(AUTH_HEADER_NAME, token);
+<<<<<<< HEAD
         
         // Fix: Use JSON.stringify instead of toString()
         xhr.setRequestHeader("description", JSON.stringify({ "description": description, "game": game }));
+=======
+        xhr.setRequestHeader("description",JSON.stringify({"description":description,"game":game}))
+>>>>>>> b65e0fc75e28ecc3bc6121696a9137039bd7f45d
 
         xhr.upload.addEventListener("progress", (event) => {
             if (!event.lengthComputable) return;
@@ -728,6 +732,7 @@ function formatSize(bytes) {
 
     // Run only on submit page
     if (fileInput && dropZone && clipContainer && submitButton) {
+<<<<<<< HEAD
         
         submitButton.addEventListener("click", async () => {
             const filesToUpload = Array.from(globalFileStore.files);
@@ -744,6 +749,16 @@ function formatSize(bytes) {
             // Proper loop over array
             for (let i = 0; i < filesToUpload.length; i++) {
                 const file = filesToUpload[i];
+=======
+        submitButton.addEventListener("click", async () => {
+            const hasSelectedFiles = fileInput.files && fileInput.files.length > 0;
+            let failed=false
+            if (!hasSelectedFiles) {
+                return;
+            }
+            for (e in fileInput.files){
+                const file=fileInput.files[e]
+>>>>>>> b65e0fc75e28ecc3bc6121696a9137039bd7f45d
                 try {
                     // Extract data from the UI cards
                     const card = document.querySelector(`.clip-card[data-filename="${CSS.escape(file.name)}"]`);
@@ -773,6 +788,13 @@ function formatSize(bytes) {
                     break;
                 }
             }
+<<<<<<< HEAD
+=======
+            if (!failed){resetSubmitPage()};
+            showUploadSuccess("Sikeres beküldés");
+            setUploadProgress(100,false,"")
+        });
+>>>>>>> b65e0fc75e28ecc3bc6121696a9137039bd7f45d
 
             if (!failed) {
                 resetSubmitPage();
